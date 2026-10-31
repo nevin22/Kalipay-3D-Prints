@@ -6,6 +6,7 @@ import Image from "next/image";
 import ExportButton from "@/components/ExportButton";
 import KeyRow from "@/components/KeyRow";
 import Slider from "@/components/Slider";
+import { MAX_CAP_HEIGHT, MIN_CAP_HEIGHT } from "@/lib/geometry/keycap";
 import {
   Checkbox,
   ColorField,
@@ -91,6 +92,9 @@ export default function Home() {
               </Select>
             </div>
           </div>
+          <Slider label="Cap height" value={s.capHeight} min={MIN_CAP_HEIGHT} max={MAX_CAP_HEIGHT} step={0.5} unit=" mm"
+            help="How tall every keycap is. The base stays the same; a taller cap is straighter-sided, so its top face gets bigger."
+            onChange={(v) => s.set({ capHeight: v })} />
         </Section>
 
         <Section title="Legend">
@@ -131,7 +135,7 @@ export default function Home() {
             </Select>
           </div>
 
-          <Slider label="Size" value={key.fontSize} min={3} max={12} step={0.5} unit=" mm"
+          <Slider label="Size" value={key.fontSize} min={3} max={16} step={0.5} unit=" mm"
             help="Height of the legend text. If it gets too close to the edge of the top face, it turns red."
             onChange={(v) => s.updateKey({ fontSize: v })} />
           <Slider label="Rotation" value={key.rotation} min={-180} max={180} step={1} unit="°"

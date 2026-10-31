@@ -46,7 +46,13 @@ function approach(value: number, goal: number, step: number) {
   return value + MathUtils.clamp(goal - value, -step, step);
 }
 
-export function stepPose(dt: number, units: number[], layout: HousingLayout, ring: RingSide | "off") {
+export function stepPose(
+  dt: number,
+  units: number[],
+  layout: HousingLayout,
+  ring: RingSide | "off",
+  capHeight: number
+) {
   const goalProgress =
     layout === "below" ? 1 : layout === "separate" ? 0 : pose.progress;
   const goalShown = layout === "hidden" ? 0 : 1;
@@ -65,8 +71,8 @@ export function stepPose(dt: number, units: number[], layout: HousingLayout, rin
     pose.gap = approach(pose.gap, goalGap, (RING_REACH * dt) / 0.4);
   }
 
-  const side = previewLayout(units, "separate", pose.gap);
-  const stacked = previewLayout(units, "below");
+  const side = previewLayout(units, "separate", pose.gap, capHeight);
+  const stacked = previewLayout(units, "below", 0, capHeight);
   const clearY = stacked.housingY - CLEAR_DROP;
   const p = pose.progress;
   const shown = smooth(pose.shown);

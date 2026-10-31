@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { HousingLayout } from "@/store/useGenerator";
-import { CAP_CORNER_RADIUS, CAP_HEIGHT, capDimensions } from "@/lib/geometry/keycap";
+import { CAP_CORNER_RADIUS, DEFAULT_CAP_HEIGHT, capDimensions } from "@/lib/geometry/keycap";
 import { addFace, addWall, roundedRectangle } from "@/lib/geometry/cap";
 import { MeshBuilder } from "@/lib/geometry/mesh";
 import { type Ring, jitterRing } from "@/lib/geometry/polygon";
@@ -30,8 +30,6 @@ const WELL_CLEARANCE = 0.6;
 const MARGIN = WALL + WELL_CLEARANCE;
 
 const HOLE = 14.1;
-const NOTCH_LENGTH = 5;
-const NOTCH_DEPTH = 0.8;
 
 /** Height of the top of the plate above the floor's underside. */
 const PLATE_TOP = FLOOR + CAVITY_HEIGHT + PLATE;
@@ -86,9 +84,15 @@ export function buildHousingTab(units: number[], side: RingSide): THREE.BufferGe
  * alone. In every layout each cap sits over its own well. `floorY` is the
  * lowest point and `targetY` is the height the camera looks at. `gapExtra` widens
  * the space between the caps and the housing (for a split ring tab pointing at them).
+ * `capHeight` is the caps' height: it decides how low their bottom is.
  */
-export function previewLayout(units: number[], layout: HousingLayout, gapExtra = 0) {
-  const capFloorY = -CAP_HEIGHT / 2;
+export function previewLayout(
+  units: number[],
+  layout: HousingLayout,
+  gapExtra = 0,
+  capHeight = DEFAULT_CAP_HEIGHT
+) {
+  const capFloorY = -capHeight / 2;
   const { width: housingW, centers } = housingLayout(units);
   // The caps' own extent: the housing minus the walls and clearance around them.
   const rowW = housingW - 2 * MARGIN;
@@ -111,15 +115,10 @@ export function previewLayout(units: number[], layout: HousingLayout, gapExtra =
   return { capXs: centers, housingX: 0, housingY: capFloorY, floorY: capFloorY, targetY: 0 };
 }
 
-/** Square switch hole with a latch notch on the left and right, counter-clockwise. */
+/** Plain square switch hole, counter-clockwise (no latch notches: they made the print stringy). */
 function holeRing(): Ring {
   const h = HOLE / 2;
-  const n = NOTCH_LENGTH / 2;
-  const o = h + NOTCH_DEPTH;
-  const pts = [
-    [h, -h], [h, -n], [o, -n], [o, n], [h, n], [h, h],
-    [-h, h], [-h, n], [-o, n], [-o, -n], [-h, -n], [-h, -h],
-  ];
+  const pts = [[h, -h], [h, h], [-h, h], [-h, -h]];
   return jitterRing(pts.map(([x, y]) => new THREE.Vector2(x, y)), 2001);
 }
 

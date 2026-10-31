@@ -33,7 +33,7 @@ export default function ExportButton() {
       // Each key can use its own font.
       const fonts = await Promise.all(s.keys.map((k) => loadFont(fontUrl(k.font))));
       const built = s.keys.map((k, i) =>
-        buildKeycapParts({ ...k, stemTolerance: s.stemTolerance }, fonts[i])
+        buildKeycapParts({ ...k, stemTolerance: s.stemTolerance, capHeight: s.capHeight }, fonts[i])
       );
       const disposeAll = () =>
         built.forEach((p) => {
@@ -60,7 +60,8 @@ export default function ExportButton() {
       const layout = previewLayout(
         units,
         withHousing ? "separate" : "hidden",
-        ring === "left" ? RING_REACH : 0
+        ring === "left" ? RING_REACH : 0,
+        s.capHeight
       );
 
       const items: ThreeMFItem[] = built.map((p, i) => {

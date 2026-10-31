@@ -4,7 +4,7 @@ import type { GeneratorState, KeyConfig } from "@/store/useGenerator";
 import {
   CAP_CORNER_RADIUS,
   CAP_EDGE_RADIUS,
-  CAP_HEIGHT,
+  DEFAULT_CAP_HEIGHT,
   capDimensions,
 } from "@/lib/geometry/keycap";
 import { LEGEND_FONT_UNITS, textToShapes } from "@/lib/geometry/legend";
@@ -22,7 +22,7 @@ export type CapSettings = Pick<
   KeyConfig,
   "units" | "text" | "fontSize" | "offsetX" | "offsetY" | "rotation" | "raise"
 > &
-  Pick<GeneratorState, "stemTolerance">;
+  Pick<GeneratorState, "stemTolerance"> & { capHeight?: number };
 
 export type KeycapParts = {
   cap: THREE.BufferGeometry;
@@ -44,6 +44,11 @@ export const TOP_THICKNESS = 1.5;
 const MIN_CORNER_RADIUS = 0.4;
 /** Segments around the cap's rounded top rim. */
 const RIM_SEGMENTS = 6;
+/**
+ * Height (mm) of the stem's tip above the cap's bottom: 1 mm over the skirt, so the cap keeps its
+ * full travel. It stays here whatever the cap's height, so a taller cap just gets a longer stem.
+ */
+const STEM_TIP_Y = DEFAULT_CAP_HEIGHT - TOP_THICKNESS - STEM_LENGTH;
 const CURVE_SEGMENTS = 8;
 /** Segments per rounded corner. */
 const CORNER_SEGMENTS = 6;
@@ -158,13 +163,14 @@ export function addWall(mesh: MeshBuilder, ring: Ring, y0: number, y1: number, i
  * same rings, so they share exact vertices.
  */
 export function buildKeycapParts(settings: CapSettings, font: Font | null): KeycapParts {
-  const { bottomW, bottomD, topW, topD } = capDimensions(settings.units);
+  const height = settings.capHeight ?? DEFAULT_CAP_HEIGHT;
+  const { bottomW, bottomD, topW, topD } = capDimensions(settings.units, height);
   const radius = CAP_CORNER_RADIUS;
   const edge = CAP_EDGE_RADIUS;
   // Outline of the outside at height y, shrunk by `inset` on every side. The
   // walls are straight, so the size at any height is a straight blend.
   const outline = (y: number, inset: number) => {
-    const k = y / CAP_HEIGHT;
+    const k = y / height;
     return roundedRectangle(
       bottomW + (topW - bottomW) * k - 2 * inset,
       bottomD + (topD - bottomD) * k - 2 * inset,
@@ -175,13 +181,13 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
   // Outside, bottom to top: a straight wall, then a rim that curves in along a
   // quarter circle to the flat top face. The inset has no slope at the start,
   // so the rim continues the wall smoothly.
-  const outside = [outline(0, 0), outline(CAP_HEIGHT - edge, 0)];
+  const outside = [outline(0, 0), outline(height - edge, 0)];
   for (let k = 1; k <= RIM_SEGMENTS; k++) {
     const a = (Math.PI / 2) * (k / RIM_SEGMENTS);
     outside.push(
       k === RIM_SEGMENTS
-        ? outline(CAP_HEIGHT, edge)
-        : outline(CAP_HEIGHT - edge + edge * Math.sin(a), edge * (1 - Math.cos(a)))
+        ? outline(height, edge)
+        : outline(height - edge + edge * Math.sin(a), edge * (1 - Math.cos(a)))
     );
   }
   const bottom = outside[0];
@@ -203,12 +209,12 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
     )
   );
   const pocket = fits && shapes.length > 0;
-  const floor = CAP_HEIGHT - LEGEND_DEPTH;
+  const floor = height - LEGEND_DEPTH;
 
   // Hollow inside: the outer walls are straight, so the wall thickness stays
   // constant when the outline at any height is shrunk by WALL on each side.
-  const ceilY = CAP_HEIGHT - TOP_THICKNESS;
-  const t = ceilY / CAP_HEIGHT;
+  const ceilY = height - TOP_THICKNESS;
+  const t = ceilY / height;
   const innerRadius = Math.max(radius - WALL, MIN_CORNER_RADIUS);
   const innerBottom = roundedRectangle(bottomW - 2 * WALL, bottomD - 2 * WALL, 0, innerRadius);
   const innerTop = roundedRectangle(
@@ -218,7 +224,7 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
     innerRadius
   );
   const stem = stemRings(settings.stemTolerance);
-  const stemY = ceilY - STEM_LENGTH;
+  const stemY = STEM_TIP_Y;
   const socketY = stemY + STEM_SOCKET_DEPTH;
 
   const cap = new MeshBuilder();
@@ -245,22 +251,22 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
   if (pocket) {
     // Top face with a hole for every legend outline.
     const outers = shapes.map((s) => [...s.outer].reverse());
-    addFace(cap, rect, outers, CAP_HEIGHT, true);
+    addFace(cap, rect, outers, height, true);
     for (const s of shapes) {
       // Cap material left standing inside letter counters (e.g. the "A").
-      for (const h of s.holes) addFace(cap, [...h].reverse(), [], CAP_HEIGHT, true);
+      for (const h of s.holes) addFace(cap, [...h].reverse(), [], height, true);
       addFace(cap, s.outer, s.holes, floor, true);
-      for (const ring of [s.outer, ...s.holes]) addWall(cap, ring, floor, CAP_HEIGHT, true);
+      for (const ring of [s.outer, ...s.holes]) addWall(cap, ring, floor, height, true);
     }
   } else {
-    addFace(cap, rect, [], CAP_HEIGHT, true);
+    addFace(cap, rect, [], height, true);
   }
 
   let legend: THREE.BufferGeometry | null = null;
   if (shapes.length > 0) {
     // Flush in the pocket when it fits, otherwise sitting on the plain top.
-    const y0 = pocket ? floor : CAP_HEIGHT;
-    const y1 = CAP_HEIGHT + settings.raise + (pocket ? 0 : LEGEND_DEPTH);
+    const y0 = pocket ? floor : height;
+    const y1 = height + settings.raise + (pocket ? 0 : LEGEND_DEPTH);
     const mesh = new MeshBuilder();
     for (const s of shapes) {
       addFace(mesh, s.outer, s.holes, y1, true);

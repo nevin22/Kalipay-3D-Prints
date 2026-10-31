@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { FontId } from "@/lib/fonts";
+import { DEFAULT_CAP_HEIGHT } from "@/lib/geometry/keycap";
 import type { RingSide } from "@/lib/geometry/ring";
 
 /** Where the housing is shown: next to the cap, under it, or not at all. */
@@ -23,6 +24,7 @@ type SharedSettings = {
   capColor: string;
   legendColor: string;
   stemTolerance: number; // mm added to the stem's "+" socket
+  capHeight: number; // mm, height of every cap; its taper grows with it
   housingLayout: HousingLayout; // preview only
   /** When on, choosing a font for one key sets it for every key. */
   fontForAll: boolean;
@@ -76,6 +78,7 @@ export const useGenerator = create<GeneratorState>((set) => ({
   legendColor: "#ff6a00",
   // Printed holes come out small; a little extra clearance helps the cap fit the switch.
   stemTolerance: 0.1,
+  capHeight: DEFAULT_CAP_HEIGHT,
   housingLayout: "separate",
   fontForAll: true,
   housingRing: "left",

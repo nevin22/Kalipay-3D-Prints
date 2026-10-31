@@ -6,7 +6,6 @@ import type { Group } from "three";
 import { useGenerator } from "@/store/useGenerator";
 import { useFont } from "@/lib/useFont";
 import { fontUrl } from "@/lib/fonts";
-import { CAP_HEIGHT } from "@/lib/geometry/keycap";
 import { buildKeycapParts } from "@/lib/geometry/cap";import { pose } from "@/lib/layoutPose";
 
 /** Legend color when it does not fit inside the top face. */
@@ -17,14 +16,15 @@ export default function Keycap({ keyId, index }: { keyId: string; index: number 
   // Only this key's own settings: editing another key does not rebuild this one.
   const key = useGenerator((s) => s.keys.find((k) => k.id === keyId) ?? s.keys[0]);
   const stemTolerance = useGenerator((s) => s.stemTolerance);
+  const capHeight = useGenerator((s) => s.capHeight);
   const capColor = useGenerator((s) => s.capColor);
   const legendColor = useGenerator((s) => s.legendColor);
 
   const { font, error } = useFont(fontUrl(key.font));
 
   const parts = useMemo(
-    () => buildKeycapParts({ ...key, stemTolerance }, font),
-    [key, stemTolerance, font]
+    () => buildKeycapParts({ ...key, stemTolerance, capHeight }, font),
+    [key, stemTolerance, capHeight, font]
   );
 
   useEffect(
@@ -51,7 +51,7 @@ export default function Keycap({ keyId, index }: { keyId: string; index: number 
 
   // The parts are built with the origin at the center of the bottom face.
   return (
-    <group ref={group} position={[0, -CAP_HEIGHT / 2, 0]}>
+    <group ref={group} position={[0, -capHeight / 2, 0]}>
       <mesh geometry={parts.cap}>
         <meshStandardMaterial color={capColor} roughness={0.55} metalness={0.05} />
       </mesh>

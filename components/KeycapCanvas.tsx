@@ -115,9 +115,9 @@ function Scene({ onFloorReady }: { onFloorReady: () => void }) {
   // Negative priority: run before the other useFrame callbacks, so they see this frame's pose.
   useFrame(({ camera, size }, delta) => {
     const dt = Math.min(delta, 0.1);
-    const { keys, housingLayout, housingRing } = useGenerator.getState();
+    const { keys, housingLayout, housingRing, capHeight } = useGenerator.getState();
     const units = keys.map((k) => k.units);
-    stepPose(dt, units, housingLayout, housingRing);
+    stepPose(dt, units, housingLayout, housingRing, capHeight);
     if (floor.current) floor.current.position.y = pose.floorY;
     const c = controls.current;
     if (!c) return;
