@@ -29,11 +29,14 @@ export function Section({
   );
 }
 
-/** A small label above a control. */
+/**
+ * A small label above a control. The label row has a fixed height (h-5), and hand-built label
+ * rows next to it (with an InfoTip, say) use the same, so controls side by side line up.
+ */
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="block min-w-0 space-y-0.5">
-      <span className="text-xs font-medium text-neutral-600">{label}</span>
+      <span className="flex h-5 items-center text-xs font-medium text-neutral-600">{label}</span>
       {children}
     </label>
   );

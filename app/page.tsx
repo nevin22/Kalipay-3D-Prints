@@ -73,7 +73,7 @@ export default function Home() {
             </Field>
 
             <div className="min-w-0 space-y-0.5">
-              <div className="flex items-center gap-1.5">
+              <div className="flex h-5 items-center gap-1.5">
                 <span className="text-xs font-medium text-neutral-600">Housing</span>
                 <InfoTip
                   align="right"
