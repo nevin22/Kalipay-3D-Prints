@@ -19,8 +19,10 @@ useTexture.preload("/images/floor.svg");
 
 /** Camera distance (mm) at the start, matching the camera prop below. */
 const BASE_DISTANCE = Math.hypot(114, 90, 114);
-/** Width of the sidebar in pixels: the scene should fit in what is left of the window. */
+/** Width of the floating sidebar in pixels: the scene should fit in what is left of the window. */
 const SIDEBAR_PX = 432;
+/** Same query as the `desk` variant in globals.css: only then does the sidebar float over the view. */
+const DESK_QUERY = "(min-width: 768px) and (min-height: 501px)";
 /** Spare room around the row when fitting it to the window. */
 const FIT_MARGIN = 1.3;
 const offset = new Vector3();
@@ -117,7 +119,8 @@ function Scene({ onFloorReady }: { onFloorReady: () => void }) {
 
     // Distance at which the whole row fits in the part of the window the sidebar leaves free.
     const fov = ((camera as PerspectiveCamera).fov * Math.PI) / 180;
-    const aspect = Math.max((size.width - SIDEBAR_PX) / size.height, 0.5);
+    const covered = window.matchMedia(DESK_QUERY).matches ? SIDEBAR_PX : 0;
+    const aspect = Math.max((size.width - covered) / size.height, 0.5);
     const need = Math.max(
       BASE_DISTANCE,
       (layoutExtent(units, housingLayout, housingRing) * FIT_MARGIN) / (2 * Math.tan(fov / 2) * aspect)

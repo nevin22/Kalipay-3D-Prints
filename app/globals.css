@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Layout modes. `desk`: the floating sidebar over a full-screen 3D view (laptops and larger).
+   `short`: a phone on its side, 3D view left and controls right. Anything else is a phone
+   upright: 3D view on top, controls below. */
+@custom-variant desk (@media (min-width: 768px) and (min-height: 501px));
+@custom-variant short (@media (max-height: 500px));
 
 :root {
   --background: #ffffff;

@@ -35,9 +35,23 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="relative h-screen w-screen overflow-hidden bg-[#f4f3f0]">
+    <main className="relative flex h-dvh w-screen flex-col overflow-hidden bg-[#f4f3f0] short:flex-row desk:block">
       <style>{FONT_FACE_CSS}</style>
-      <aside className="absolute left-0 top-0 z-10 h-full w-[27rem] space-y-2 overflow-y-auto overflow-x-hidden border-r border-white/80 bg-gradient-to-b from-white/50 to-white/20 p-3 text-neutral-900 shadow-[inset_-1px_0_0_rgba(255,255,255,0.7),inset_0_1px_0_rgba(255,255,255,1),inset_0_0_40px_rgba(255,255,255,0.35),8px_0_40px_rgba(0,0,0,0.15)] backdrop-blur-3xl backdrop-saturate-200">
+
+      {/* The 3D view comes first: on top on a phone, on the left when it is on its side, and
+          behind the floating sidebar on a laptop. */}
+      <section className="relative h-[40dvh] shrink-0 short:h-auto short:min-w-0 short:flex-1 desk:absolute desk:inset-0 desk:h-auto">
+        <KeycapCanvas />
+        <Image
+          src="/images/profile.jpg"
+          alt="Kalipay Prints 3D"
+          width={144}
+          height={144}
+          className="absolute bottom-3 right-3 z-10 h-14 w-14 rounded-full border-2 border-white object-cover shadow-lg desk:bottom-6 desk:right-6 desk:h-[144px] desk:w-[144px]"
+        />
+      </section>
+
+      <aside className="z-10 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto overflow-x-hidden border-t border-white/80 bg-white/90 p-3 text-neutral-900 short:w-[22rem] short:flex-none short:border-l short:border-t-0 desk:absolute desk:left-0 desk:top-0 desk:h-full desk:w-[27rem] desk:flex-none desk:border-r desk:border-t-0 desk:bg-transparent desk:bg-gradient-to-b desk:from-white/50 desk:to-white/20 desk:shadow-[inset_-1px_0_0_rgba(255,255,255,0.7),inset_0_1px_0_rgba(255,255,255,1),inset_0_0_40px_rgba(255,255,255,0.35),8px_0_40px_rgba(0,0,0,0.15)] desk:backdrop-blur-3xl desk:backdrop-saturate-200">
         <h1 className="whitespace-nowrap bg-gradient-to-r from-[#ff8a4c] via-[#b57cff] to-[#5fd8b4] bg-clip-text py-0.5 text-center text-[14px] font-bold uppercase tracking-[0.12em] text-transparent">
           Keycap Fidget Lab
         </h1>
@@ -165,17 +179,6 @@ export default function Home() {
         <ExportButton />
       </aside>
 
-      <Image
-        src="/images/profile.jpg"
-        alt="Kalipay Prints 3D"
-        width={144}
-        height={144}
-        className="absolute bottom-6 right-6 z-10 h-[144px] w-[144px] rounded-full border-2 border-white object-cover shadow-lg"
-      />
-
-      <section className="absolute inset-0">
-        <KeycapCanvas />
-      </section>
     </main>
   );
 }
