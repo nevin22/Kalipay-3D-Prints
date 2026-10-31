@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Kalipay 3D Prints: Keycap Fidget Lab
 
-## Getting Started
+A free web app for designing mechanical keyboard keycaps with your own text legend. You see the
+caps live in 3D and download a two-color 3MF file ready for a 3D printer. No account needed.
 
-First, run the development server:
+Made by Kalipay 3D Prints.
+
+## What you can do
+
+- **Up to 6 keys in a row**, each 1u to 2.25u wide, with its own legend (up to 6 characters).
+- **Legend controls:** font, size, rotation, and raise. At 0 mm the legend sits flush in a
+  pocket in the top; higher values make a raised legend you can feel.
+- **Two colors**, one for the cap and one for the legend, printed as separate parts that fit
+  together exactly.
+- **Cherry MX-style stem**, so the caps fit MX-style switches.
+- **Fidget housing:** a strip with one well per key for plate-mount MX switches, with an optional
+  split ring tab so it can hang from a keychain.
+- **3MF download:** caps (face down, or face up when the legend is raised) and the housing,
+  laid out on the bed side by side.
+
+## Printing notes
+
+- The 3MF stores the cap and legend colors as a standard 3MF color group. In Bambu Studio
+  (tested with 02.08.02.61) a "Standard 3mf Import color" dialog appears on open; click OK and
+  it creates both filaments. Other slicers have not been tested yet.
+- Sizes are standard MX numbers and have not been measured against every switch. Print one cap
+  first and check the stem fit.
+- The housing wells are about 21 mm apart (for 1u), not the 19.05 mm keyboard pitch, so the
+  housing is a fidget toy and does not fit a real keyboard plate.
+
+## Run it locally
+
+Requires Node.js 20 or newer.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open <http://localhost:3000>.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Other commands:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+| --- | --- |
+| `npm test` | Runs the tests (Vitest), including watertight checks of the printed parts |
+| `npm run lint` | Lints the code |
+| `npx tsc --noEmit` | Type-checks the code |
+| `npm run build` | Builds the production site |
 
-## Learn More
+## Branches
 
-To learn more about Next.js, take a look at the following resources:
+- `mobile-layout` is the current version, with the phone layout. It is the branch that gets
+  deployed.
+- `master` is the desktop-only version from before the phone layout.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Built with
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Next.js, React, TypeScript, Tailwind CSS, three.js with React Three Fiber and drei, Zustand,
+opentype.js and fflate.
 
-## Deploy on Vercel
+## Credits
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Roboto font by Google, Apache License 2.0.
+- The other display fonts in `public/fonts` belong to their authors.
