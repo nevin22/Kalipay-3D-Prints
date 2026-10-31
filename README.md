@@ -48,18 +48,7 @@ Other commands:
 | `npx tsc --noEmit` | Type-checks the code |
 | `npm run build` | Builds the production site |
 
-## Branches
-
-- `mobile-layout` is the current version, with the phone layout. It is the branch that gets
-  deployed.
-- `master` is the desktop-only version from before the phone layout.
-
 ## Built with
 
 Next.js, React, TypeScript, Tailwind CSS, three.js with React Three Fiber and drei, Zustand,
 opentype.js and fflate.
-
-## Credits
-
-- Roboto font by Google, Apache License 2.0.
-- The other display fonts in `public/fonts` belong to their authors.
