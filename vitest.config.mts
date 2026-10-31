@@ -1,0 +1,10 @@
+import { defineConfig } from "vitest/config";
+import { fileURLToPath } from "node:url";
+
+export default defineConfig({
+  resolve: {
+    // Same alias as tsconfig's "@/*".
+    alias: { "@": fileURLToPath(new URL(".", import.meta.url)) },
+  },
+  test: { include: ["lib/**/*.test.ts", "store/**/*.test.ts"] },
+});

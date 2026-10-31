@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4096" height="2304" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ff8a4c" />
+      <stop offset="1" stop-color="#ffc46b" />
+    </linearGradient>
+    <linearGradient id="cool" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6c8dff" />
+      <stop offset="1" stop-color="#b57cff" />
+    </linearGradient>
+    <linearGradient id="mint" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5fd8b4" />
+      <stop offset="1" stop-color="#6cc4ff" />
+    </linearGradient>
+    <!-- Fades the art out toward the edges so the floor has no visible border. -->
+    <radialGradient id="fade" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0.55" stop-color="#fff" />
+      <stop offset="1" stop-color="#000" />
+    </radialGradient>
+    <mask id="edge">
+      <rect width="1600" height="900" fill="url(#fade)" />
+    </mask>
+  </defs>
+
+  <g mask="url(#edge)">
+
+    <circle cx="330" cy="230" r="170" fill="url(#warm)" fill-opacity="0.5" />
+    <circle cx="300" cy="690" r="210" fill="url(#cool)" fill-opacity="0.4" />
+    <circle cx="1290" cy="200" r="160" fill="url(#mint)" fill-opacity="0.45" />
+
+    <g fill="none" stroke="url(#cool)" stroke-opacity="0.55" stroke-width="2.5">
+      <circle cx="1230" cy="680" r="90" />
+      <circle cx="1230" cy="680" r="150" />
+      <circle cx="1230" cy="680" r="210" />
+    </g>
+
+    <g fill="none" stroke-linecap="round" stroke-width="3.5">
+      <path d="M100 520 C 330 400, 500 680, 800 540 S 1210 400, 1500 520" stroke="url(#warm)" stroke-opacity="0.75" />
+      <path d="M100 570 C 340 450, 520 730, 810 590 S 1220 450, 1500 570" stroke="url(#cool)" stroke-opacity="0.65" />
+      <path d="M100 620 C 350 500, 540 780, 820 640 S 1230 500, 1500 620" stroke="url(#mint)" stroke-opacity="0.65" />
+      <path d="M100 670 C 360 550, 560 830, 830 690 S 1240 550, 1500 670" stroke="url(#warm)" stroke-opacity="0.45" />
+    </g>
+
+    <g fill="none" stroke="url(#warm)" stroke-opacity="0.65" stroke-width="3" stroke-linejoin="round">
+      <polygon points="1000,150 1050,179 1050,237 1000,266 950,237 950,179" />
+      <polygon points="1100,208 1150,237 1150,295 1100,324 1050,295 1050,237" />
+      <polygon points="1000,266 1050,295 1050,353 1000,382 950,353 950,295" />
+    </g>
+
+    <g>
+      <circle cx="640" cy="130" r="9" fill="#ff8a4c" fill-opacity="0.75" />
+      <circle cx="900" cy="800" r="12" fill="#6c8dff" fill-opacity="0.65" />
+      <circle cx="1420" cy="430" r="8" fill="#5fd8b4" fill-opacity="0.85" />
+      <rect x="560" y="740" width="26" height="26" rx="6" fill="none" stroke="#b57cff" stroke-opacity="0.75" stroke-width="3" transform="rotate(20 573 753)" />
+      <rect x="1340" y="540" width="34" height="34" rx="8" fill="none" stroke="#ff8a4c" stroke-opacity="0.65" stroke-width="3" transform="rotate(-15 1357 557)" />
+      <path d="M520 320 l18 0 M529 311 l0 18" stroke="#6c8dff" stroke-opacity="0.75" stroke-width="3" stroke-linecap="round" />
+      <path d="M1180 470 l18 0 M1189 461 l0 18" stroke="#ff8a4c" stroke-opacity="0.75" stroke-width="3" stroke-linecap="round" />
+    </g>
+  </g>
+</svg>
