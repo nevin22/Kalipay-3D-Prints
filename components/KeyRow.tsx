@@ -3,7 +3,7 @@
 import { MAX_KEYS, useGenerator } from "@/store/useGenerator";
 
 const BUTTON =
-  "flex h-7 min-w-7 items-center justify-center rounded-lg px-2 text-xs font-semibold transition";
+  "flex h-7 min-w-7 items-center justify-center rounded-lg px-2 text-xs font-semibold transition touch:h-10 touch:min-w-10 touch:text-sm";
 
 /** One chip per key in the row, plus add and remove. The selected chip is the key being edited. */
 export default function KeyRow() {

@@ -28,7 +28,7 @@ export default function Slider({
   const fill = ((value - min) / (max - min)) * 100;
 
   return (
-    <div className="relative grid grid-cols-[4.75rem_1fr_3.75rem] items-center gap-2">
+    <div className="relative grid grid-cols-[4.75rem_1fr_3.75rem] items-center gap-2 touch:min-h-10">
       <div className="flex items-center gap-1">
         <label htmlFor={id} className="text-xs font-medium text-neutral-600">
           {label}
