@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Keycap Fidget Lab",
+  title: "Kalipay3dprints",
   description: "Design a keycap with your own legend, preview it in 3D, and export it for printing.",
 };
 

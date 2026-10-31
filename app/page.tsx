@@ -53,7 +53,7 @@ export default function Home() {
 
       <aside className="z-10 flex min-h-0 flex-1 flex-col gap-2 [&>*]:shrink-0 overflow-y-auto overflow-x-hidden border-t border-white/80 bg-white/90 p-3 text-neutral-900 short:w-[22rem] short:flex-none short:border-l short:border-t-0 desk:absolute desk:left-0 desk:top-0 desk:h-full desk:w-[27rem] desk:flex-none desk:border-r desk:border-t-0 desk:bg-transparent desk:bg-gradient-to-b desk:from-white/50 desk:to-white/20 desk:shadow-[inset_-1px_0_0_rgba(255,255,255,0.7),inset_0_1px_0_rgba(255,255,255,1),inset_0_0_40px_rgba(255,255,255,0.35),8px_0_40px_rgba(0,0,0,0.15)] desk:backdrop-blur-3xl desk:backdrop-saturate-200">
         <h1 className="whitespace-nowrap bg-gradient-to-r from-[#ff8a4c] via-[#b57cff] to-[#5fd8b4] bg-clip-text py-0.5 text-center text-[3vw] font-bold uppercase tracking-[0.08em] desk:text-[14px] desk:tracking-[0.12em] text-transparent">
-          Keycap Fidget Lab
+          Kalipay3dprints
         </h1>
 
         <Section title="Keys">
