@@ -14,8 +14,14 @@ import { useGenerator } from "@/store/useGenerator";
 import { fontUrl } from "@/lib/fonts";
 import { loadFont } from "@/lib/useFont";
 
+// Touch screens (phones) get a half-size floor image, so they do not run out of graphics memory.
+const FLOOR_SRC =
+  typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches
+    ? "/images/floor-small.svg"
+    : "/images/floor.svg";
+
 // Start fetching the floor image as soon as this file loads, not when the scene first draws it.
-useTexture.preload("/images/floor.svg");
+useTexture.preload(FLOOR_SRC);
 
 /** Camera distance (mm) at the start, matching the camera prop below. */
 const BASE_DISTANCE = Math.hypot(114, 90, 114);
@@ -34,7 +40,7 @@ const FLOOR_HEIGHT = 360;
 /** The abstract artwork, lying flat on the floor so it moves with the camera. */
 function FloorArt() {
   const maxAnisotropy = useThree((s) => s.gl.capabilities.getMaxAnisotropy());
-  const map = useTexture("/images/floor.svg", (t) => {
+  const map = useTexture(FLOOR_SRC, (t) => {
     t.colorSpace = SRGBColorSpace;
     t.anisotropy = maxAnisotropy;
   });
