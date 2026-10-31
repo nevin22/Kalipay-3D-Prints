@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+/* Layout modes. `desk`: the floating sidebar over a full-screen 3D view (laptops and larger).
+   `short`: a phone on its side, 3D view left and controls right. Anything else is a phone
+   upright: 3D view on top, controls below. */
+@custom-variant desk (@media (min-width: 768px) and (min-height: 501px));
+@custom-variant short (@media (max-height: 500px) and (orientation: landscape));
+/* `touch`: the main pointer is a finger. Controls get bigger there, whatever the window size. */
+@custom-variant touch (@media (pointer: coarse));
 
 :root {
   --background: #ffffff;
@@ -56,6 +63,31 @@ body {
   background: #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
 }
+/* Finger-sized slider. pan-y lets a vertical swipe scroll the sidebar instead of moving the handle. */
+@media (pointer: coarse) {
+  .range {
+    height: 8px;
+    touch-action: pan-y;
+  }
+  .range::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+  .range::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+  }
+  .checkbox {
+    width: 24px;
+    height: 24px;
+    background-size: 16px;
+  }
+  .swatch {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 .range:hover::-webkit-slider-thumb,
 .range:focus-visible::-webkit-slider-thumb {
   transform: scale(1.15);

@@ -115,7 +115,9 @@ export default function ExportButton() {
         : "Keys with a raised legend print face up (stem on the bed); the others print face down.";
 
   return (
-    <div className="space-y-2 rounded-xl border border-white/70 bg-white/40 p-2.5 shadow-sm">
+    // On a phone this is a bar pinned to the bottom of the scrolling sidebar (it cancels the
+    // sidebar's padding and clears the home indicator); on a laptop it is a normal card.
+    <div className="sticky bottom-0 z-10 -mx-3 -mb-3 mt-auto space-y-2 border-t border-black/10 bg-white/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 desk:static desk:mx-0 desk:mb-0 desk:mt-0 desk:rounded-xl desk:border desk:border-white/70 desk:bg-white/40 desk:p-2.5 desk:shadow-sm">
       <Toggle
         label="Include housing in the download"
         checked={withHousing}
@@ -125,13 +127,14 @@ export default function ExportButton() {
         type="button"
         onClick={download}
         disabled={busy}
-        className="w-full rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-orange-500/30 transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50 disabled:shadow-none"
+        className="w-full rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-xs touch:py-3 touch:text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50 disabled:shadow-none"
       >
         Download 3MF
       </button>
-      <p className="px-0.5 text-[11px] leading-snug text-neutral-600">
+      <p className="hidden px-0.5 text-[11px] leading-snug text-neutral-600 desk:block">
         {faceHint}
-        {withHousing && " The housing is in the same file, next to them, floor down."}      </p>
+        {withHousing && " The housing is in the same file, next to them, floor down."}
+      </p>
       {message && <p className="text-xs text-red-600">{message}</p>}
     </div>
   );
