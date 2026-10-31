@@ -4,7 +4,7 @@
    `short`: a phone on its side, 3D view left and controls right. Anything else is a phone
    upright: 3D view on top, controls below. */
 @custom-variant desk (@media (min-width: 768px) and (min-height: 501px));
-@custom-variant short (@media (max-height: 500px));
+@custom-variant short (@media (max-height: 500px) and (orientation: landscape));
 /* `touch`: the main pointer is a finger. Controls get bigger there, whatever the window size. */
 @custom-variant touch (@media (pointer: coarse));
 

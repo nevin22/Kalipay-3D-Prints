@@ -71,7 +71,7 @@ Use only open-licensed fonts and icons (OFL, MIT, Apache) and keep a credits pag
 
 Steps 0 to 4 are built and committed on `mobile-layout` (baseline on `master`, one commit per step). `tsc`, lint, 35 tests and `next build` pass. Not yet looked at in a browser phone mode or on a real phone, so spacing may need a tweak. Merge into `master` once the owner is happy; to throw it away, switch back to `master`. The text below is the original plan, kept for the reasoning.
 
-How it works now: `globals.css` defines three Tailwind variants, `desk` (min-width 768 and min-height 501: the floating sidebar), `short` (max-height 500: phone on its side, view left and controls right) and `touch` (`pointer: coarse`: 16 px inputs, 40 px targets, big slider thumb). `app/page.tsx` has the canvas `section` first (with the round logo inside it) and the `aside` second. `KeycapCanvas.tsx` only subtracts `SIDEBAR_PX` when the `desk` query matches, and picks `floor-small.svg` (2048 px) over `floor.svg` on touch screens. `InfoTip` opens on tap. `ExportButton` is a sticky bottom bar below `desk`.
+How it works now: `globals.css` defines three Tailwind variants, `desk` (min-width 768 and min-height 501: the floating sidebar), `short` (max-height 500 and landscape: phone on its side, view left and controls right) and `touch` (`pointer: coarse`: 16 px inputs, 40 px targets, big slider thumb). `app/page.tsx` has the canvas `section` first (with the round logo inside it) and the `aside` second. `KeycapCanvas.tsx` only subtracts `SIDEBAR_PX` when the `desk` query matches, and picks `floor-small.svg` (2048 px) over `floor.svg` on touch screens. `InfoTip` opens on tap. `ExportButton` is a sticky bottom bar below `desk`.
 
 Original plan, written 2026-10-30:
 
