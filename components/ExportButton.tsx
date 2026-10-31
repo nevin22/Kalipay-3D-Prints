@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useGenerator } from "@/store/useGenerator";
 import { loadFont } from "@/lib/useFont";
 import { fontUrl } from "@/lib/fonts";
@@ -10,11 +10,17 @@ import { buildHousing, buildHousingTab, previewLayout } from "@/lib/geometry/hou
 import { RING_REACH } from "@/lib/geometry/ring";
 import { build3mf, type ThreeMFItem, type ThreeMFPart } from "@/lib/export/threemf";
 
+const PRIMARY =
+  "w-full rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-xs touch:py-3 touch:text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50 disabled:shadow-none";
+
 export default function ExportButton() {
   const s = useGenerator();
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [withHousing, setWithHousing] = useState(true);
+  // The note shown before every download. A native <dialog> opened with showModal() sits above
+  // the whole page, dims it, and closes on Esc.
+  const notice = useRef<HTMLDialogElement>(null);
 
   // A raised legend would leave the top face hanging in the air when printed
   // face down, so those caps print upright, stem on the bed.
@@ -125,12 +131,52 @@ export default function ExportButton() {
       />
       <button
         type="button"
-        onClick={download}
+        onClick={() => notice.current?.showModal()}
         disabled={busy}
-        className="w-full rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 px-4 py-2 text-xs touch:py-3 touch:text-base font-semibold text-white shadow-lg shadow-orange-500/30 transition hover:brightness-105 active:scale-[0.99] disabled:opacity-50 disabled:shadow-none"
+        className={PRIMARY}
       >
         Download 3MF
       </button>
+
+      <dialog
+        ref={notice}
+        aria-labelledby="download-notice-title"
+        // A tap on the dimmed area outside the card closes it.
+        onClick={(e) => e.target === e.currentTarget && notice.current?.close()}
+        className="m-auto w-[min(22rem,calc(100vw-2rem))] rounded-2xl bg-white p-0 text-neutral-900 shadow-2xl backdrop:bg-black/40"
+      >
+        <div className="space-y-3 p-5">
+          <h2 id="download-notice-title" className="text-base font-semibold">
+            Your file is ready to print
+          </h2>
+          <p className="text-sm leading-relaxed text-neutral-600">
+            You are about to download a 3MF file that is ready for printing.
+          </p>
+          <p className="text-sm leading-relaxed text-neutral-600">
+            No 3D printer? Just message our page, <strong>Kalipay 3D Prints</strong>, and we can
+            print it for you right away!
+          </p>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => notice.current?.close()}
+              className="w-full rounded-lg border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-neutral-700 transition hover:bg-neutral-50 touch:py-3 touch:text-base"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                notice.current?.close();
+                download();
+              }}
+              className={PRIMARY}
+            >
+              Download 3MF
+            </button>
+          </div>
+        </div>
+      </dialog>
       <p className="hidden px-0.5 text-[11px] leading-snug text-neutral-600 desk:block">
         {faceHint}
         {withHousing && " The housing is in the same file, next to them, floor down."}
