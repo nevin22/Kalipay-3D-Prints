@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Kalipay3dprints",
-  description: "Design a keycap with your own legend, preview it in 3D, and export it for printing.",
+  description: "Design your own 3D prints: keycaps, keychains and vases.",
 };
 
 export const viewport: Viewport = {

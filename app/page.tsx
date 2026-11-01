@@ -1,188 +1,59 @@
-"use client";
+import Link from "next/link";
+import HomeTitle from "@/components/HomeTitle";
 
-import { useEffect } from "react";
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import ExportButton from "@/components/ExportButton";
-import KeyRow from "@/components/KeyRow";
-import Slider from "@/components/Slider";
-import { MAX_CAP_HEIGHT, MIN_CAP_HEIGHT } from "@/lib/geometry/keycap";
-import {
-  Checkbox,
-  ColorField,
-  CONTROL,
-  Field,
-  InfoTip,
-  Section,
-  Select,
-} from "@/components/ui";
-import { RING_SIDES, type RingSide } from "@/lib/geometry/ring";
-import { FONT_FACE_CSS, FONTS, fontFamily, type FontId } from "@/lib/fonts";
-import { selectSelectedKey, useGenerator, type HousingLayout } from "@/store/useGenerator";
-
-const KeycapCanvas = dynamic(() => import("@/components/KeycapCanvas"), {
-  ssr: false,
-});
-
-const SIZES = [1, 1.25, 1.5, 1.75, 2, 2.25];
+const FEATURES = [
+  { href: "/keycaps", name: "Fidget Keycaps", accent: "from-[#ff8a4c] to-[#ffc46b]", text: "Design a custom fidget keycap with your name, initials or favorite word, ready to 3D print." },
+  { href: "/keychains", soon: true, name: "Keychains", accent: "from-[#6c8dff] to-[#b57cff]", text: "Make a personalized keychain for yourself, or as a gift for someone special." },
+  { href: "/vases", soon: true, name: "Vases", accent: "from-[#5fd8b4] to-[#6cc4ff]", text: "Create a one-of-a-kind vase to brighten up any room." },
+];
 
 export default function Home() {
-  const s = useGenerator();
-  const key = selectSelectedKey(s);
-
-  // Fetch every font now, so the dropdown shows them in their own style the first time it opens.
-  useEffect(() => {
-    FONTS.forEach((f) => document.fonts.load(`16px ${fontFamily(f.id)}`).catch(() => {}));
-  }, []);
-
   return (
-    <main className="relative flex h-dvh w-screen flex-col overflow-hidden bg-[#f4f3f0] short:flex-row desk:block">
-      <style>{FONT_FACE_CSS}</style>
+    <main className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[#f4f3f0] bg-[url(/images/floor-small.svg)] bg-cover bg-center px-4 pb-16 pt-10 text-neutral-900">
+      <HomeTitle />
 
-      {/* The 3D view comes first: on top on a phone, on the left when it is on its side, and
-          behind the floating sidebar on a laptop. */}
-      <section className="relative h-[40dvh] shrink-0 short:h-auto short:min-w-0 short:flex-1 desk:absolute desk:inset-0 desk:h-auto">
-        <KeycapCanvas />
-        <Image
-          src="/images/profile.jpg"
-          alt="Kalipay Prints 3D"
-          width={144}
-          height={144}
-          className="absolute bottom-3 right-3 z-10 h-14 w-14 rounded-full border-2 border-white object-cover shadow-lg desk:bottom-6 desk:right-6 desk:h-[144px] desk:w-[144px]"
-        />
-      </section>
-
-      <aside className="z-10 flex min-h-0 flex-1 flex-col gap-2 [&>*]:shrink-0 overflow-y-auto overflow-x-hidden border-t border-white/80 bg-white/90 p-3 text-neutral-900 short:w-[22rem] short:flex-none short:border-l short:border-t-0 desk:absolute desk:left-0 desk:top-0 desk:h-full desk:w-[27rem] desk:flex-none desk:border-r desk:border-t-0 desk:bg-transparent desk:bg-gradient-to-b desk:from-white/50 desk:to-white/20 desk:shadow-[inset_-1px_0_0_rgba(255,255,255,0.7),inset_0_1px_0_rgba(255,255,255,1),inset_0_0_40px_rgba(255,255,255,0.35),8px_0_40px_rgba(0,0,0,0.15)] desk:backdrop-blur-3xl desk:backdrop-saturate-200">
-        <h1 className="whitespace-nowrap bg-gradient-to-r from-[#ff8a4c] via-[#b57cff] to-[#5fd8b4] bg-clip-text py-0.5 text-center text-[3vw] font-bold uppercase tracking-[0.08em] desk:text-[14px] desk:tracking-[0.12em] text-transparent">
-          Kalipay3dprints
-        </h1>
-
-        <Section title="Keys">
-          <KeyRow />
-          <div className="grid grid-cols-2 gap-2">
-            <Field label="Key size">
-              <Select
-                value={key.units}
-                onChange={(e) => s.updateKey({ units: Number(e.target.value) })}
-              >
-                {SIZES.map((u) => (
-                  <option key={u} value={u}>
-                    {u}u
-                  </option>
-                ))}
-              </Select>
-            </Field>
-
-            <div className="min-w-0 space-y-0.5">
-              <div className="flex h-5 items-center gap-1.5">
-                <span className="text-xs font-medium text-neutral-600">Housing</span>
-                <InfoTip
-                  align="right"
-                  text="For display only. This changes how the preview looks. The download always puts the housing next to the keycaps, whatever you pick here."
-                />
+      <nav className="grid w-full max-w-3xl gap-4 sm:grid-cols-3">
+        {FEATURES.map((f) => {
+          const body = (
+            <>
+              <div className={`mx-auto mb-3 h-1.5 w-12 rounded-full bg-gradient-to-r ${f.accent}`} />
+              <h2 className={`bg-gradient-to-r ${f.accent} bg-clip-text text-xl font-extrabold tracking-tight text-transparent`}>{f.name}</h2>
+              <p className="mt-2 text-balance text-sm leading-relaxed text-neutral-700">{f.text}</p>
+            </>
+          );
+          // Not built yet: a plain box, not a link, so it cannot be opened from here.
+          if (f.soon)
+            return (
+              <div key={f.href} aria-disabled className="relative cursor-not-allowed select-none overflow-hidden rounded-2xl text-center glass glass-blur p-5">
+                <div className="opacity-50">{body}</div>
+                <span className="absolute -left-9 top-5 w-32 -rotate-45 bg-gradient-to-r from-[#ff6b5e] to-[#e53935] whitespace-nowrap py-0.5 text-center text-[8px] font-semibold uppercase tracking-wide text-white shadow [text-shadow:0_1px_1px_rgba(0,0,0,0.35)]">
+                  Coming soon
+                </span>
               </div>
-              <Select
-                aria-label="Housing"
-                value={s.housingLayout}
-                onChange={(e) => s.set({ housingLayout: e.target.value as HousingLayout })}
-              >
-                <option value="separate">Separate</option>
-                <option value="below">Below keycap</option>
-                <option value="hidden">Don&apos;t display</option>
-              </Select>
-            </div>
-          </div>
-          <Slider label="Cap height" value={s.capHeight} min={MIN_CAP_HEIGHT} max={MAX_CAP_HEIGHT} step={0.5} unit=" mm"
-            help="How tall every keycap is. The base stays the same; a taller cap is straighter-sided, so its top face gets bigger."
-            onChange={(v) => s.set({ capHeight: v })} />
-        </Section>
-
-        <Section title="Legend">
-          <Field label="Text">
-            <input
-              className={CONTROL}
-              value={key.text}
-              maxLength={6}
-              placeholder="Up to 6 characters"
-              onChange={(e) => s.updateKey({ text: e.target.value })}
-            />
-          </Field>
-
-          <div className="space-y-0.5">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs font-medium text-neutral-600">Font</span>
-              <Checkbox
-                label="Use for all keys"
-                checked={s.fontForAll}
-                onChange={(v) => {
-                  s.set({ fontForAll: v });
-                  // Turning it on makes every key match the one being edited.
-                  if (v) s.updateKey({ font: key.font });
-                }}
-              />
-            </div>
-            <Select
-              aria-label="Font"
-              value={key.font}
-              style={{ fontFamily: fontFamily(key.font) }}
-              onChange={(e) => s.updateKey({ font: e.target.value as FontId })}
+            );
+          return (
+            <Link
+              key={f.href}
+              href={f.href}
+              className="rounded-2xl text-center glass glass-blur p-5 outline-none transition hover:-translate-y-0.5 hover:border-orange-400 focus-visible:border-orange-400 focus-visible:ring-2 focus-visible:ring-orange-300/40"
             >
-              {FONTS.map((f) => (
-                <option key={f.id} value={f.id} style={{ fontFamily: fontFamily(f.id) }}>
-                  {f.name}
-                </option>
-              ))}
-            </Select>
-          </div>
+              {body}
+            </Link>
+          );
+        })}
+      </nav>
 
-          <Slider label="Size" value={key.fontSize} min={3} max={16} step={0.5} unit=" mm"
-            help="Height of the legend text. If it gets too close to the edge of the top face, it turns red."
-            onChange={(v) => s.updateKey({ fontSize: v })} />
-          <Slider label="Rotation" value={key.rotation} min={-180} max={180} step={1} unit="°"
-            help="Turns the legend around its center, in degrees."
-            onChange={(v) => s.updateKey({ rotation: v })} />
-          <Slider label="Raise" value={key.raise} min={0} max={1} step={0.05} unit=" mm"
-            help="How far the legend stands above the top face. At 0 it is flush and the top is smooth; higher values give a raised, tactile legend."
-            onChange={(v) => s.updateKey({ raise: v })} />
-        </Section>
-
-        <div className="grid grid-cols-2 gap-2">
-          <Section title="Color">
-            <div className="flex flex-col gap-1.5">
-              <ColorField label="Cap" value={s.capColor}
-                onChange={(v) => s.set({ capColor: v })} />
-              <ColorField label="Legend" value={s.legendColor}
-                onChange={(v) => s.set({ legendColor: v })} />
-            </div>
-          </Section>
-
-          <Section title="Split ring" center>
-            <Checkbox
-              label="Add to housing"
-              checked={s.housingRing !== "off"}
-              onChange={(on) => s.set({ housingRing: on ? "left" : "off" })}
-            />
-            {s.housingRing !== "off" && (
-              <div className="w-full">
-                <Select
-                  aria-label="Where the split ring is"
-                  value={s.housingRing}
-                  onChange={(e) => s.set({ housingRing: e.target.value as RingSide })}
-                >
-                  {RING_SIDES.map((side) => (
-                    <option key={side} value={side}>
-                      {side[0].toUpperCase() + side.slice(1)}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-            )}
-          </Section>
-        </div>
-
-        <ExportButton />
-      </aside>
-
+      <a
+        href="https://www.facebook.com/profile.php?id=61581448113902"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full glass glass-blur px-4 py-2 text-sm font-medium text-neutral-700 transition hover:-translate-y-0.5 hover:text-[#1877f2]"
+      >
+        <svg viewBox="0 0 24 24" className="h-5 w-5 fill-[#1877f2]" aria-hidden>
+          <path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.51c-1.49 0-1.96.93-1.96 1.88v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z" />
+        </svg>
+        Follow us on Facebook
+      </a>
     </main>
   );
 }

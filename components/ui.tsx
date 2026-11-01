@@ -16,7 +16,7 @@ export function Section({
   center?: boolean;
 }) {
   return (
-    <section className="flex flex-col gap-2 rounded-xl border border-white/70 bg-white/40 p-2.5 shadow-sm">
+    <section className="flex flex-col gap-2 glass rounded-xl p-2.5">
       <h2 className="text-[10px] font-semibold uppercase leading-none tracking-widest text-neutral-500">
         {title}
       </h2>

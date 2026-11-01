@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useEffect, useRef, useState, type ComponentRef } from "react";
+import { Suspense, useEffect, useRef, useState, type ComponentRef, type Ref } from "react";
 import { Color, MathUtils, SRGBColorSpace, Vector3, type Group, type PerspectiveCamera } from "three";
 import { OrbitControls, Grid, Text, useTexture } from "@react-three/drei";
 import { PITCH } from "@/lib/geometry/keycap";
@@ -99,6 +99,39 @@ function FloorTitle() {
   );
 }
 
+export function Lights() {
+  return (
+    <>
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[20, 30, 10]} intensity={1.6} />
+      <directionalLight position={[-20, 10, -10]} intensity={0.5} />
+    </>
+  );
+}
+
+/** The floor artwork, the page name and the grid. `onReady` fires once the artwork and font have loaded. */
+export function Floor({ onReady, ref }: { onReady: () => void; ref?: Ref<Group> }) {
+  return (
+    <group ref={ref}>
+      <Suspense fallback={null}>
+        <FloorArt />
+        <FloorTitle />
+        <Ready onReady={onReady} />
+      </Suspense>
+      <Grid
+        position={[0, -0.1, 0]}
+        args={[200, 200]}
+        cellSize={PITCH}
+        cellThickness={0.6}
+        sectionSize={PITCH * 5}
+        sectionThickness={1}
+        fadeDistance={150}
+        infiniteGrid
+      />
+    </group>
+  );
+}
+
 /**
  * The whole 3D scene. It also advances the shared `pose` once per frame (before the cap and the
  * housing read it), which is what animates the housing layouts: the housing slides and fades,
@@ -155,32 +188,14 @@ function Scene({ onFloorReady }: { onFloorReady: () => void }) {
 
   return (
     <>
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[20, 30, 10]} intensity={1.6} />
-      <directionalLight position={[-20, 10, -10]} intensity={0.5} />
+      <Lights />
 
       {keyIds.map((id, index) => (
         <Keycap key={id} keyId={id} index={index} />
       ))}
       <Housing />
 
-      <group ref={floor}>
-        <Suspense fallback={null}>
-          <FloorArt />
-          <FloorTitle />
-          <Ready onReady={onFloorReady} />
-        </Suspense>
-        <Grid
-          position={[0, -0.1, 0]}
-          args={[200, 200]}
-          cellSize={PITCH}
-          cellThickness={0.6}
-          sectionSize={PITCH * 5}
-          sectionThickness={1}
-          fadeDistance={150}
-          infiniteGrid
-        />
-      </group>
+      <Floor ref={floor} onReady={onFloorReady} />
 
       <OrbitControls
         ref={controls}

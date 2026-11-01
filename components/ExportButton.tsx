@@ -124,7 +124,7 @@ export default function ExportButton() {
   return (
     // On a phone this is a bar pinned to the bottom of the scrolling sidebar (it cancels the
     // sidebar's padding and clears the home indicator); on a laptop it is a normal card.
-    <div className="sticky bottom-0 z-10 -mx-3 -mb-3 mt-auto space-y-2 border-t border-black/10 bg-white/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 desk:static desk:mx-0 desk:mb-0 desk:mt-0 desk:rounded-xl desk:border desk:border-white/70 desk:bg-white/40 desk:p-2.5 desk:shadow-sm">
+    <div className="sticky bottom-0 z-10 -mx-3 -mb-3 mt-auto space-y-2 border-t border-black/10 bg-white/95 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-2 desk:static desk:mx-0 desk:mb-0 desk:mt-0 desk:rounded-xl desk:glass desk:p-2.5">
       <Toggle
         label="Include housing in the download"
         checked={withHousing}
