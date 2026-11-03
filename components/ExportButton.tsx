@@ -22,9 +22,6 @@ export default function ExportButton() {
   // the whole page, dims it, and closes on Esc.
   const notice = useRef<HTMLDialogElement>(null);
 
-  // A raised legend would leave the top face hanging in the air when printed
-  // face down, so those caps print upright, stem on the bed.
-  const raised = s.keys.filter((k) => k.raise > 0).length;
   const many = s.keys.length > 1;
 
   const download = async () => {
@@ -106,6 +103,15 @@ export default function ExportButton() {
       a.download = `${name}.3mf`;
       a.click();
       URL.revokeObjectURL(url);
+      // Fire and forget: a failed notification must never block the download.
+      const summary = s.keys
+        .map((k) => (k.legendKind === "shape" ? k.shape : `"${k.text}"`))
+        .join(", ");
+      fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: `3MF downloaded: ${s.keys.length} key(s): ${summary}` }),
+      }).catch(() => {});
       setMessage(null);
     } catch (e) {
       console.error(e);
@@ -114,14 +120,6 @@ export default function ExportButton() {
       setBusy(false);
     }
   };
-
-  const subject = many ? "Keycaps print" : "Keycap prints";
-  const faceHint =
-    raised === 0
-      ? `${subject} face down: the top face is on the bed.`
-      : raised === s.keys.length
-        ? `${subject} face up (stem on the bed) because the legend is raised.`
-        : "Keys with a raised legend print face up (stem on the bed); the others print face down.";
 
   return (
     // On a phone this is a bar pinned to the bottom of the scrolling sidebar (it cancels the
@@ -180,10 +178,6 @@ export default function ExportButton() {
           </div>
         </div>
       </dialog>
-      <p className="hidden px-0.5 text-[11px] leading-snug text-neutral-600 desk:block">
-        {faceHint}
-        {withHousing && " The housing is in the same file, next to them, floor down."}
-      </p>
       {message && <p className="text-xs text-red-600">{message}</p>}
     </div>
   );
