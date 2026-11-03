@@ -1,5 +1,6 @@
 "use client";
 
+import { ICON_SIZE_RATIO, MIN_LEGEND_HEIGHT } from "@/lib/geometry/printLimits";
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -17,6 +18,7 @@ import {
   Section,
   Select,
 } from "@/components/ui";
+import IconPicker from "@/components/IconPicker";
 import { RING_SIDES, type RingSide } from "@/lib/geometry/ring";
 import { FONT_FACE_CSS, FONTS, fontFamily, type FontId } from "@/lib/fonts";
 import { selectSelectedKey, useGenerator, type HousingLayout } from "@/store/useGenerator";
@@ -112,52 +114,79 @@ export default function KeycapsPage() {
         </Section>
 
         <Section title="Legend">
-          <Field label="Text">
-            <input
-              className={CONTROL}
-              value={key.text}
-              maxLength={6}
-              placeholder="Up to 6 characters"
-              onChange={(e) => s.updateKey({ text: e.target.value })}
-            />
-          </Field>
-
-          <div className="space-y-0.5">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-xs font-medium text-neutral-600">Font</span>
-              <Checkbox
-                label="Use for all keys"
-                checked={s.fontForAll}
-                onChange={(v) => {
-                  s.set({ fontForAll: v });
-                  // Turning it on makes every key match the one being edited.
-                  if (v) s.updateKey({ font: key.font });
-                }}
-              />
-            </div>
-            <Select
-              aria-label="Font"
-              value={key.font}
-              style={{ fontFamily: fontFamily(key.font) }}
-              onChange={(e) => s.updateKey({ font: e.target.value as FontId })}
-            >
-              {FONTS.map((f) => (
-                <option key={f.id} value={f.id} style={{ fontFamily: fontFamily(f.id) }}>
-                  {f.name}
-                </option>
-              ))}
-            </Select>
+          <div className="grid grid-cols-2 gap-1.5" role="group" aria-label="Legend type">
+            {(["text", "shape"] as const).map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                aria-pressed={key.legendKind === kind}
+                // Only shapes can be raised, so a key going back to text goes flush again.
+                onClick={() => s.updateKey(kind === "text" ? { legendKind: kind, raise: 0 } : { legendKind: kind })}
+                className={`h-7 rounded-lg text-xs font-semibold capitalize transition touch:h-10 touch:text-sm ${
+                  key.legendKind === kind
+                    ? "bg-gradient-to-r from-orange-500 to-amber-400 text-white shadow-md shadow-orange-500/30"
+                    : "border border-black/10 bg-white/70 text-neutral-700 hover:bg-white"
+                }`}
+              >
+                {kind === "shape" ? "icon" : kind}
+              </button>
+            ))}
           </div>
 
-          <Slider label="Size" value={key.fontSize} min={3} max={16} step={0.5} unit=" mm"
-            help="Height of the legend text. If it gets too close to the edge of the top face, it turns red."
+          {key.legendKind === "shape" ? (
+            // A div, not a Field: a label around the picker would click its button again
+            // whenever the window inside it is clicked.
+            <div className="space-y-0.5">
+              <span className="flex h-5 items-center text-xs font-medium text-neutral-600">Icon</span>
+              <IconPicker value={key.shape} onChange={(shape) => s.updateKey({ shape })} />
+            </div>
+          ) : (
+            <>
+              <Field label="Text">
+                <input
+                  className={CONTROL}
+                  value={key.text}
+                  maxLength={6}
+                  placeholder="Up to 6 characters"
+                  onChange={(e) => s.updateKey({ text: e.target.value })}
+                />
+              </Field>
+
+              <div className="space-y-0.5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs font-medium text-neutral-600">Font</span>
+                  <Checkbox
+                    label="Use for all keys"
+                    checked={s.fontForAll}
+                    onChange={(v) => {
+                      s.set({ fontForAll: v });
+                      // Turning it on makes every key match the one being edited.
+                      if (v) s.updateKey({ font: key.font });
+                    }}
+                  />
+                </div>
+                <Select
+                  aria-label="Font"
+                  value={key.font}
+                  style={{ fontFamily: fontFamily(key.font) }}
+                  onChange={(e) => s.updateKey({ font: e.target.value as FontId })}
+                >
+                  {FONTS.map((f) => (
+                    <option key={f.id} value={f.id} style={{ fontFamily: fontFamily(f.id) }}>
+                      {f.name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </>
+          )}
+
+          <Slider label="Size" value={key.fontSize} min={key.legendKind === "shape" ? Math.ceil((MIN_LEGEND_HEIGHT / ICON_SIZE_RATIO) * 2) / 2 : MIN_LEGEND_HEIGHT} max={24} step={0.5} unit=" mm"
+            help={`${key.legendKind === "shape" ? "Size of the icon" : "Height of the legend text"}. If it gets too close to the edge of the top face, it turns red.`}
             onChange={(v) => s.updateKey({ fontSize: v })} />
           <Slider label="Rotation" value={key.rotation} min={-180} max={180} step={1} unit="°"
             help="Turns the legend around its center, in degrees."
             onChange={(v) => s.updateKey({ rotation: v })} />
-          <Slider label="Raise" value={key.raise} min={0} max={1} step={0.05} unit=" mm"
-            help="How far the legend stands above the top face. At 0 it is flush and the top is smooth; higher values give a raised, tactile legend."
-            onChange={(v) => s.updateKey({ raise: v })} />
         </Section>
 
         <div className="grid grid-cols-2 gap-2">

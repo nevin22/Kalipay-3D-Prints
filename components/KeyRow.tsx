@@ -1,5 +1,6 @@
 "use client";
 
+import ShapeIcon from "@/components/ShapeIcon";
 import { MAX_KEYS, useGenerator } from "@/store/useGenerator";
 
 const BUTTON =
@@ -32,7 +33,7 @@ export default function KeyRow() {
                   : "border border-black/10 bg-white/70 text-neutral-700 hover:bg-white"
               }`}
             >
-              {k.text || "·"}
+              {k.legendKind === "shape" ? <ShapeIcon id={k.shape} className="h-4 w-4" /> : k.text || "·"}
             </button>
           );
         })}

@@ -8,7 +8,9 @@ import {
   capDimensions,
 } from "@/lib/geometry/keycap";
 import { LEGEND_FONT_UNITS, textToShapes } from "@/lib/geometry/legend";
+import { insetRing, insetScales } from "@/lib/geometry/inset";
 import { MeshBuilder } from "@/lib/geometry/mesh";
+import { shapeToShapes } from "@/lib/geometry/shapes";
 import { STEM_LENGTH, STEM_SOCKET_DEPTH, stemRings } from "@/lib/geometry/stem";
 import {
   type Ring,
@@ -22,6 +24,7 @@ export type CapSettings = Pick<
   KeyConfig,
   "units" | "text" | "fontSize" | "offsetX" | "offsetY" | "rotation" | "raise"
 > &
+  Partial<Pick<KeyConfig, "legendKind" | "shape" | "smooth">> &
   Pick<GeneratorState, "stemTolerance"> & { capHeight?: number };
 
 export type KeycapParts = {
@@ -50,6 +53,7 @@ const RIM_SEGMENTS = 6;
  */
 const STEM_TIP_Y = DEFAULT_CAP_HEIGHT - TOP_THICKNESS - STEM_LENGTH;
 const CURVE_SEGMENTS = 8;
+const SHAPE_SCALE = 0.65;
 /** Segments per rounded corner. */
 const CORNER_SEGMENTS = 6;
 
@@ -92,10 +96,13 @@ function insideRounded(p: THREE.Vector2, hw: number, hd: number, r: number) {
   return Math.abs(p.x) <= hw && Math.abs(p.y) <= hd && dx * dx + dy * dy <= r * r;
 }
 
-/** Text outlines in mm, centered, sized, rotated and offset. */
+/** Text or shape outlines in mm, centered, sized, rotated and offset. */
 function legendRings(font: Font | null, s: CapSettings): LegendShape[] {
-  if (!font || !s.text.trim()) return [];
-  const raw = textToShapes(font, s.text).map((sh) => sh.extractPoints(CURVE_SEGMENTS));
+  let outlines: THREE.Shape[];
+  if (s.legendKind === "shape") outlines = shapeToShapes(s.shape ?? "star");
+  else if (font && s.text.trim()) outlines = textToShapes(font, s.text);
+  else return [];
+  const raw = outlines.map((sh) => sh.extractPoints(CURVE_SEGMENTS));
   if (raw.length === 0) return [];
 
   const box = new THREE.Box2();
@@ -103,7 +110,9 @@ function legendRings(font: Font | null, s: CapSettings): LegendShape[] {
   const center = box.getCenter(new THREE.Vector2());
 
   // Same order as a three.js transform: scale, rotate, translate.
-  const scale = s.fontSize / LEGEND_FONT_UNITS;
+  // A shape fills its whole box, but text is only as tall as its capital letters, so the same Size
+  // would make a shape too big for the top face. At 0.65 the default Size (12) leaves room to spare.
+  const scale = (s.fontSize / LEGEND_FONT_UNITS) * (s.legendKind === "shape" ? SHAPE_SCALE : 1);
   const angle = THREE.MathUtils.degToRad(s.rotation);
   const cos = Math.cos(angle);
   const sin = Math.sin(angle);
@@ -154,6 +163,40 @@ export function addWall(mesh: MeshBuilder, ring: Ring, y0: number, y1: number, i
     if (inward) mesh.addQuad(at(q, y0), at(p, y0), at(p, y1), at(q, y1));
     else mesh.addQuad(at(p, y0), at(q, y0), at(q, y1), at(p, y1));
   }
+}
+
+/** Band between two rings of the same point count, `lo` at yLo and `hi` at yHi, facing outward. */
+function addBand(mesh: MeshBuilder, lo: Ring, yLo: number, hi: Ring, yHi: number) {
+  for (let i = 0; i < lo.length; i++) {
+    const j = (i + 1) % lo.length;
+    mesh.addQuad(at(lo[i], yLo), at(lo[j], yLo), at(hi[j], yHi), at(hi[i], yHi));
+  }
+}
+
+/**
+ * The rounded top edge of a raised legend: a quarter circle of the given radius, as a stack of
+ * tiers. Each tier is every outline shrunk a bit more, ending at the flat top. Points near thin
+ * strokes, short edges and sharp corners are shrunk less (see `insetScales`), so those spots stay
+ * more square instead of the whole legend losing its rounding. Returns null when there is nothing
+ * to round.
+ */
+function smoothRim(shapes: LegendShape[], radius: number, top: number) {
+  if (radius < 0.02) return null;
+  const scales = insetScales(shapes.flatMap((s) => [s.outer, ...s.holes]), radius);
+  if (!scales) return null;
+
+  let seed = 1000;
+  const tiers: { y: number; shapes: LegendShape[] }[] = [];
+  for (let k = 1; k <= RIM_SEGMENTS; k++) {
+    const a = (Math.PI / 2) * (k / RIM_SEGMENTS);
+    const inset = k === RIM_SEGMENTS ? radius : radius * (1 - Math.cos(a));
+    const y = k === RIM_SEGMENTS ? top : top - radius + radius * Math.sin(a);
+    let ring = 0;
+    // The shrunk outlines of different letters share lines again, so they get the same nudge.
+    const move = (r: Ring) => jitterRing(insetRing(r, inset, scales[ring++]), seed++);
+    tiers.push({ y, shapes: shapes.map((s) => ({ outer: move(s.outer), holes: s.holes.map(move) })) });
+  }
+  return { radius, tiers };
 }
 
 /**
@@ -268,11 +311,22 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
     const y0 = pocket ? floor : height;
     const y1 = height + settings.raise + (pocket ? 0 : LEGEND_DEPTH);
     const mesh = new MeshBuilder();
+    // A raised legend can have a rounded top edge: straight walls up to `wallTop`, then the rim.
+    const rim = settings.raise > 0 ? smoothRim(shapes, ((settings.smooth ?? 0) / 100) * settings.raise, y1) : null;
+    const wallTop = y1 - (rim?.radius ?? 0);
     for (const s of shapes) {
-      addFace(mesh, s.outer, s.holes, y1, true);
       addFace(mesh, s.outer, s.holes, y0, false);
-      for (const ring of [s.outer, ...s.holes]) addWall(mesh, ring, y0, y1, false);
+      for (const ring of [s.outer, ...s.holes]) addWall(mesh, ring, y0, wallTop, false);
     }
+    let prev = { y: wallTop, shapes };
+    for (const tier of rim?.tiers ?? []) {
+      tier.shapes.forEach((s, i) => {
+        const lo = [prev.shapes[i].outer, ...prev.shapes[i].holes];
+        [s.outer, ...s.holes].forEach((ring, r) => addBand(mesh, lo[r], prev.y, ring, tier.y));
+      });
+      prev = tier;
+    }
+    for (const s of prev.shapes) addFace(mesh, s.outer, s.holes, prev.y, true);
     legend = mesh.toGeometry();
   }
 

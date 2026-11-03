@@ -94,9 +94,11 @@ export default function ExportButton() {
       tab?.dispose();
 
       const slug = (t: string) => t.replace(/[^a-z0-9]/gi, "");
+      // A shape key is named by its shape ("star"), a text key by its text.
+      const legend = (k: (typeof s.keys)[number]) => slug(k.legendKind === "shape" ? k.shape : k.text);
       const name = many
-        ? `keycaps-${s.keys.length}-${s.keys.map((k) => slug(k.text) || "x").join("").slice(0, 16)}`
-        : `keycap-${slug(s.keys[0].text) || "blank"}-${s.keys[0].units}u`;
+        ? `keycaps-${s.keys.length}-${s.keys.map((k) => legend(k) || "x").join("").slice(0, 16)}`
+        : `keycap-${legend(s.keys[0]) || "blank"}-${s.keys[0].units}u`;
       const blob = new Blob([bytes as BlobPart], { type: "model/3mf" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");

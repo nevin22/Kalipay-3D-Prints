@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import type { FontId } from "@/lib/fonts";
-import { DEFAULT_CAP_HEIGHT } from "@/lib/geometry/keycap";
+import { MAX_CAP_HEIGHT } from "@/lib/geometry/keycap";
 import type { RingSide } from "@/lib/geometry/ring";
+import type { ShapeId } from "@/lib/geometry/shapes";
 
 /** Where the housing is shown: next to the cap, under it, or not at all. */
 export type HousingLayout = "separate" | "below" | "hidden";
@@ -10,13 +11,17 @@ export type HousingLayout = "separate" | "below" | "hidden";
 export type KeyConfig = {
   id: string;
   units: number;
+  /** What the legend is: the text below, or one of the built-in shapes. */
+  legendKind: "text" | "shape";
+  shape: ShapeId;
   text: string;
   font: FontId;
-  fontSize: number; // mm
+  fontSize: number; // mm, the text's height or the shape's size
   offsetX: number; // mm
   offsetY: number; // mm
   rotation: number; // degrees
   raise: number; // mm the legend stands above the top face
+  smooth: number; // percent of `raise` that the legend's top edge is rounded; only used when raised
 };
 
 /** Settings shared by every key. */
@@ -62,6 +67,8 @@ let keyCounter = 3;
 const DEFAULT_KEYS: KeyConfig[] = ["A", "B", "C"].map((text, i) => ({
   id: `key-${i + 1}`,
   units: 1,
+  legendKind: "text",
+  shape: "star",
   text,
   font: "roboto",
   fontSize: 12,
@@ -69,6 +76,7 @@ const DEFAULT_KEYS: KeyConfig[] = ["A", "B", "C"].map((text, i) => ({
   offsetY: 0,
   rotation: 0,
   raise: 0,
+  smooth: 0,
 }));
 
 export const useGenerator = create<GeneratorState>((set) => ({
@@ -78,8 +86,8 @@ export const useGenerator = create<GeneratorState>((set) => ({
   legendColor: "#ff6a00",
   // Printed holes come out small; a little extra clearance helps the cap fit the switch.
   stemTolerance: 0.1,
-  capHeight: DEFAULT_CAP_HEIGHT,
-  housingLayout: "separate",
+  capHeight: MAX_CAP_HEIGHT,
+  housingLayout: "below",
   fontForAll: true,
   housingRing: "left",
   set: (patch) => set(patch),

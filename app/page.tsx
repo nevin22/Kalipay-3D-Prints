@@ -1,46 +1,58 @@
+import Image from "next/image";
 import Link from "next/link";
 import HomeTitle from "@/components/HomeTitle";
 
 const FEATURES = [
-  { href: "/keycaps", name: "Fidget Keycaps", accent: "from-[#ff8a4c] to-[#ffc46b]", text: "Design a custom fidget keycap with your name, initials or favorite word, ready to 3D print." },
-  { href: "/keychains", soon: true, name: "Keychains", accent: "from-[#6c8dff] to-[#b57cff]", text: "Make a personalized keychain for yourself, or as a gift for someone special." },
-  { href: "/vases", soon: true, name: "Vases", accent: "from-[#5fd8b4] to-[#6cc4ff]", text: "Create a one-of-a-kind vase to brighten up any room." },
-];
+  { href: "/keycaps", icon: "fidget-keycap", name: "Fidget Keycaps", title: "from-[#e8590c] to-[#d97706]", text: "Design a custom fidget keycap with your name, initials or favorite word, ready to 3D print." },
+  { href: "/keychains", soon: true, icon: "keychain", name: "Keychains", title: "from-[#4a6cf0] to-[#9333ea]", text: "Make a personalized keychain for yourself, or as a gift for someone special." },
+  { href: "/vases", soon: true, icon: "vase", name: "Vases", title: "from-[#0f9d74] to-[#0284c7]", text: "Create a one-of-a-kind vase to brighten up any room." },
+] as const;
 
 export default function Home() {
   return (
     <main className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[#f4f3f0] bg-[url(/images/floor-small.svg)] bg-cover bg-center px-4 pb-16 pt-10 text-neutral-900">
       <HomeTitle />
 
-      <nav className="grid w-full max-w-3xl gap-4 sm:grid-cols-3">
-        {FEATURES.map((f) => {
-          const body = (
-            <>
-              <div className={`mx-auto mb-3 h-1.5 w-12 rounded-full bg-gradient-to-r ${f.accent}`} />
-              <h2 className={`bg-gradient-to-r ${f.accent} bg-clip-text text-xl font-extrabold tracking-tight text-transparent`}>{f.name}</h2>
-              <p className="mt-2 text-balance text-sm leading-relaxed text-neutral-700">{f.text}</p>
-            </>
-          );
-          // Not built yet: a plain box, not a link, so it cannot be opened from here.
-          if (f.soon)
-            return (
-              <div key={f.href} aria-disabled className="relative cursor-not-allowed select-none overflow-hidden rounded-2xl text-center glass glass-blur p-5">
-                <div className="opacity-50">{body}</div>
-                <span className="absolute -left-9 top-5 w-32 -rotate-45 bg-gradient-to-r from-[#ff6b5e] to-[#e53935] whitespace-nowrap py-0.5 text-center text-[8px] font-semibold uppercase tracking-wide text-white shadow [text-shadow:0_1px_1px_rgba(0,0,0,0.35)]">
-                  Coming soon
+      <nav aria-label="Features" className="w-full max-w-xl overflow-hidden rounded-3xl glass !bg-white/20 backdrop-blur-[6px] backdrop-saturate-150">
+        <ul className="divide-y divide-white/70">
+          {FEATURES.map((f) => {
+            const soon = "soon" in f;
+            const row = (
+              <>
+                <Image src={`/images/icon-${f.icon}.webp`} alt="" width={64} height={64} unoptimized className="h-16 w-16 shrink-0 drop-shadow-[0_4px_5px_rgb(0_0_0/0.28)]" />
+                <span className={`min-w-0 flex-1 ${soon ? "opacity-60" : ""}`}>
+                  <span className="flex items-center gap-2">
+                    <span className={`bg-gradient-to-r bg-clip-text text-lg font-extrabold tracking-tight text-transparent ${f.title}`}>{f.name}</span>
+                    {soon && <span className="rounded-full bg-neutral-900/80 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">Coming soon</span>}
+                  </span>
+                  <span className="mt-0.5 block text-balance text-sm leading-snug text-neutral-700">{f.text}</span>
                 </span>
-              </div>
+                {!soon && (
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-b from-[#ffa066] to-[#e8590c] text-white shadow-[0_3px_6px_rgb(0_0_0/0.2),inset_0_2px_0_rgb(255_255_255/0.45)] transition group-hover:scale-110">
+                    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current transition group-hover:translate-x-0.5" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M5 12h14m-6-6 6 6-6 6" />
+                    </svg>
+                  </span>
+                )}
+              </>
             );
-          return (
-            <Link
-              key={f.href}
-              href={f.href}
-              className="rounded-2xl text-center glass glass-blur p-5 outline-none transition hover:-translate-y-0.5 hover:border-orange-400 focus-visible:border-orange-400 focus-visible:ring-2 focus-visible:ring-orange-300/40"
-            >
-              {body}
-            </Link>
-          );
-        })}
+            // Not built yet: a plain row, not a link, so it cannot be opened from here.
+            return (
+              <li key={f.href}>
+                {soon ? (
+                  <div aria-disabled className="flex cursor-not-allowed select-none items-center gap-4 p-4">{row}</div>
+                ) : (
+                  <Link
+                    href={f.href}
+                    className="group flex items-center gap-4 p-4 outline-none transition hover:bg-white/40 focus-visible:bg-white/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange-400"
+                  >
+                    {row}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
       <a
