@@ -85,13 +85,21 @@ const toPath = <T extends THREE.Path>(path: T, pts: Point[]) => {
 };
 
 /**
+ * An icon's outlines as plain points (an outer ring and its holes, y up), about 100 units across and
+ * centered. No three.js objects, so it is safe to call while a page renders: `new THREE.Shape()`
+ * makes an id with `Math.random()`, which Next refuses during prerendering.
+ */
+export function shapeOutlines(id: ShapeId): Traced {
+  return TRACED[id] ?? [{ outer: BASIC[id] ?? BASIC.star, holes: [] }];
+}
+
+/**
  * An icon's outlines as the same `THREE.Shape[]` that `textToShapes` returns, about 100 units
  * across and centered. A picture can be several outlines (a bee's stripes) and can have holes
  * (eyes). Pictures nested inside a hole (a pupil) were left out when they were traced.
  */
 export function shapeToShapes(id: ShapeId): THREE.Shape[] {
-  const outlines: Traced = TRACED[id] ?? [{ outer: BASIC[id] ?? BASIC.star, holes: [] }];
-  return outlines.map(({ outer, holes }) => {
+  return shapeOutlines(id).map(({ outer, holes }) => {
     const shape = toPath(new THREE.Shape(), outer);
     shape.holes = holes.map((h) => toPath(new THREE.Path(), h));
     return shape;
