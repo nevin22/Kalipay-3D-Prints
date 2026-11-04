@@ -6,6 +6,7 @@ import { Color, MathUtils, SRGBColorSpace, Vector3, type Group, type Perspective
 import { OrbitControls, Grid, Text, useTexture } from "@react-three/drei";
 import { PITCH } from "@/lib/geometry/keycap";
 import Keycap from "@/components/Keycap";
+import CapGuides from "@/components/CapGuides";
 import Housing from "@/components/Housing";
 import { layoutExtent } from "@/lib/geometry/housing";
 import { pose, stepPose } from "@/lib/layoutPose";
@@ -26,9 +27,9 @@ useTexture.preload(FLOOR_SRC);
 /** Camera distance (mm) at the start, matching the camera prop below. */
 const BASE_DISTANCE = Math.hypot(114, 90, 114);
 /** Width of the floating sidebar in pixels: the scene should fit in what is left of the window. */
-const SIDEBAR_PX = 432;
+export const SIDEBAR_PX = 432;
 /** Same query as the `desk` variant in globals.css: only then does the sidebar float over the view. */
-const DESK_QUERY = "(min-width: 768px) and (min-height: 501px)";
+export const DESK_QUERY = "(min-width: 768px) and (min-height: 501px)";
 /** Spare room around the row when fitting it to the window. */
 const FIT_MARGIN = 1.3;
 const offset = new Vector3();
@@ -194,6 +195,7 @@ function Scene({ onFloorReady }: { onFloorReady: () => void }) {
         <Keycap key={id} keyId={id} index={index} />
       ))}
       <Housing />
+      <CapGuides />
 
       <Floor ref={floor} onReady={onFloorReady} />
 

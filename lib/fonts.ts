@@ -8,6 +8,8 @@ export const FONTS = [
   { id: "mouldy-cheese", name: "Mouldy Cheese (Niskala Huruf)", url: "/fonts/mouldy-cheese.ttf" },
   // Non-commercial only: remove before any public deployment.
   { id: "kinder-child", name: "Kinder Child Kawaii Bubble (GraphicSauce)", url: "/fonts/kinder-child-kawaii-bubble.otf" },
+  // Script, SIL Open Font License 1.1 (free to use commercially). Its letters overlap; the keychain merges them.
+  { id: "pacifico", name: "Pacifico (script)", url: "/fonts/pacifico-latin-400-normal.woff" },
 ] as const;
 
 export type FontId = (typeof FONTS)[number]["id"];

@@ -60,6 +60,19 @@ export function housingLayout(units: number[]) {
 }
 
 /**
+ * The row of caps on its own, in the housing strip's coordinates (centered on 0): the left and right
+ * edges of the first and last cap, the width between them, and the depth. The size lines use it.
+ */
+export function capRow(units: number[]) {
+  const { centers } = housingLayout(units);
+  const first = capDimensions(units[0]);
+  const last = capDimensions(units[units.length - 1]);
+  const minX = centers[0] - first.bottomW / 2;
+  const maxX = centers[centers.length - 1] + last.bottomW / 2;
+  return { minX, maxX, width: maxX - minX, depth: first.bottomD, firstCenter: centers[0] };
+}
+
+/**
  * Total width (mm) of everything shown in a layout: the camera needs it to fit the scene.
  * A split ring tab on the left or right end adds its reach, either to the gap between the
  * caps and the housing or to the outside.

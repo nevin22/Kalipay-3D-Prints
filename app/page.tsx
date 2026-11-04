@@ -4,7 +4,7 @@ import HomeTitle from "@/components/HomeTitle";
 
 const FEATURES = [
   { href: "/keycaps", icon: "fidget-keycap", name: "Fidget Keycaps", title: "from-[#e8590c] to-[#d97706]", text: "Design a custom fidget keycap with your name, initials or favorite word, ready to 3D print." },
-  { href: "/keychains", soon: true, icon: "keychain", name: "Keychains", title: "from-[#4a6cf0] to-[#9333ea]", text: "Make a personalized keychain for yourself, or as a gift for someone special." },
+  { href: "/keychains", icon: "keychain", name: "Keychains", title: "from-[#4a6cf0] to-[#9333ea]", text: "Make a personalized keychain for yourself, or as a gift for someone special." },
   { href: "/vases", soon: true, icon: "vase", name: "Vases", title: "from-[#0f9d74] to-[#0284c7]", text: "Create a one-of-a-kind vase to brighten up any room." },
 ] as const;
 

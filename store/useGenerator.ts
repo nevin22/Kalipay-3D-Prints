@@ -67,8 +67,9 @@ let keyCounter = 3;
 const DEFAULT_KEYS: KeyConfig[] = ["A", "B", "C"].map((text, i) => ({
   id: `key-${i + 1}`,
   units: 1,
-  legendKind: "text",
-  shape: "star",
+  // The second key starts as a heart icon; its text stays "B" for when it is switched back.
+  legendKind: i === 1 ? "shape" : "text",
+  shape: i === 1 ? "heart" : "star",
   text,
   font: "roboto",
   fontSize: 12,
