@@ -22,9 +22,8 @@ export const capTaper = (height: number) =>
  * Outer size of the cap in mm (rough Cherry-like numbers, refined later). The base is fixed;
  * a taller cap leans in more, so its top face gets smaller.
  */
-export function capDimensions(units: number, height = DEFAULT_CAP_HEIGHT) {
+export function capDimensions(units: number, height = DEFAULT_CAP_HEIGHT, taper = capTaper(height)) {
   const bottomW = units * PITCH - 0.85;
-  const taper = capTaper(height);
   return {
     bottomW,
     bottomD: BASE_DEPTH,

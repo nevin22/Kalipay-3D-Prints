@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import { addFace, addWall } from "@/lib/geometry/cap";
+import { unionRings } from "@/lib/geometry/outline";
 import { MeshBuilder } from "@/lib/geometry/mesh";
-import { type Ring, jitterRing } from "@/lib/geometry/polygon";
+import { type Ring, cleanRing, jitterRing, orient } from "@/lib/geometry/polygon";
 
 /**
  * Which side of the housing the split ring tab sticks out from. Left and right are the
@@ -79,8 +80,11 @@ export function ringOutline(halfW: number, halfD: number, side: RingSide): { out
  * `halfD` from the middle. It is its own closed solid; it overlaps the wall a little
  * instead of being cut into it, since there are no boolean operations.
  */
-export function buildRingTab(halfW: number, halfD: number, side: RingSide, y0 = 0): THREE.BufferGeometry {
-  const { outer, hole } = ringOutline(halfW, halfD, side);
+export function buildRingTab(halfW: number, halfD: number, side: RingSide, y0 = 0, neck?: Ring): THREE.BufferGeometry {
+  const tab = ringOutline(halfW, halfD, side);
+  const hole = tab.hole;
+  // An optional neck (a 2D outline) is joined to the tab's outline, to reach back into a wall that is not straight.
+  const outer = neck ? jitterRing(cleanRing(unionRings([orient(tab.outer, true), orient(neck, true)])[0]), 4003) : tab.outer;
   const y1 = y0 + THICKNESS;
   const holeHole = [...hole].reverse();
 

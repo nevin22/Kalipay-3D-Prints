@@ -91,7 +91,48 @@ export type ThreeMFItem = {
   faceDown: boolean;
   /** Where the item sits along the bed's X axis, in mm. */
   offsetX?: number;
+  /** Where the item sits along the bed's Y axis, in mm. */
+  offsetY?: number;
 };
+
+/** The item's footprint on the bed (x and y range, mm) before its offsets. */
+function footprint(item: ThreeMFItem) {
+  const rotate = place(item.faceDown);
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+  for (const p of item.parts) {
+    const pos = p.geometry.getAttribute("position").array;
+    for (let i = 0; i < pos.length; i += 3) {
+      const [x, y] = rotate(pos[i], pos[i + 1], pos[i + 2]);
+      x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    }
+  }
+  return { x0, x1, y0, y1 };
+}
+
+/**
+ * Lay items out in rows (left to right inside a row, rows front to back) with `gap` mm between them,
+ * the whole block centered on a `bed` mm square plate, by setting each item's offsets. Returns the
+ * block's width and depth so the caller can refuse a block bigger than the plate.
+ */
+export function arrangeOnBed(rows: ThreeMFItem[][], bed: number, gap = 8) {
+  const boxes = rows.map((r) => r.map(footprint));
+  const widths = boxes.map((r) => r.reduce((w, b) => w + b.x1 - b.x0, 0) + gap * (r.length - 1));
+  const depths = boxes.map((r) => Math.max(...r.map((b) => b.y1 - b.y0)));
+  const depth = depths.reduce((a, d) => a + d, 0) + gap * (rows.length - 1);
+  let yTop = bed / 2 + depth / 2;
+  rows.forEach((row, r) => {
+    const yc = yTop - depths[r] / 2;
+    let x = bed / 2 - widths[r] / 2;
+    row.forEach((item, i) => {
+      const b = boxes[r][i];
+      item.offsetX = x - b.x0;
+      item.offsetY = yc - (b.y0 + b.y1) / 2;
+      x += b.x1 - b.x0 + gap;
+    });
+    yTop -= depths[r] + gap;
+  });
+  return { width: Math.max(...widths), depth };
+}
 
 /**
  * Build a .3mf file. Every part becomes one object that points at its color in
@@ -126,7 +167,7 @@ export function build3mf(items: ThreeMFItem[]): Uint8Array {
     }
     const move = (x: number, y: number, z: number) => {
       const [px, py, pz] = rotate(x, y, z);
-      return [px + (item.offsetX ?? 0), py, pz - zMin];
+      return [px + (item.offsetX ?? 0), py + (item.offsetY ?? 0), pz - zMin];
     };
 
     const partSettings: string[] = [];

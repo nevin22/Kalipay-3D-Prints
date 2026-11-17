@@ -7,7 +7,7 @@ declare module "clipper-lib" {
     ClipType: { ctUnion: number };
     PolyType: { ptSubject: number };
     PolyFillType: { pftNonZero: number };
-    JoinType: { jtRound: number };
+    JoinType: { jtRound: number; jtMiter: number };
     EndType: { etClosedPolygon: number };
     Clipper: new () => {
       AddPaths(paths: Paths, polyType: number, closed: boolean): boolean;

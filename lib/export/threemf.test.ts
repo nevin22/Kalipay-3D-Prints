@@ -4,7 +4,7 @@ import { parse } from "opentype.js";
 import { strFromU8, unzipSync } from "fflate";
 import { buildKeycapParts } from "@/lib/geometry/cap";
 import { buildHousing, previewLayout } from "@/lib/geometry/housing";
-import { build3mf } from "@/lib/export/threemf";
+import { arrangeOnBed, build3mf } from "@/lib/export/threemf";
 
 const file = readFileSync("public/fonts/roboto-latin-700-normal.woff");
 const font = parse(file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength));
@@ -55,5 +55,27 @@ describe("build3mf with several keys", () => {
     const settings = strFromU8(files["Metadata/model_settings.config"]);
     expect(settings.match(/key="extruder" value="2"/g)).toHaveLength(3);
     expect(settings.match(/key="extruder" value="1"/g)!.length).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe("arrangeOnBed", () => {
+  it("keeps every item inside the plate, centered, without overlaps", () => {
+    const housing = buildHousing([1, 1, 1, 1, 1]);
+    const cap = buildKeycapParts({ units: 1, text: "", fontSize: 12, offsetX: 0, offsetY: 0, rotation: 0, raise: 0, stemTolerance: 0.1 }, null).cap;
+    const item = (name: string, g: typeof housing, faceDown: boolean) => ({ name, faceDown, parts: [{ name, geometry: g, color: "#ffffff", extruder: 1 }] });
+    const big = item("Housing", housing, false);
+    const small = [1, 2, 3, 4, 5].map((i) => item(`Key ${i}`, cap, true));
+    arrangeOnBed([[big], small], 256, 8);
+    const files = unzipSync(build3mf([big, ...small]));
+    const xml = strFromU8(files["3D/3dmodel.model"]);
+    const xs = [...xml.matchAll(/<vertex x="([-\d.]+)" y="([-\d.]+)"/g)].map((m) => [Number(m[1]), Number(m[2])]);
+    for (const [x, y] of xs) {
+      expect(x).toBeGreaterThan(0);
+      expect(x).toBeLessThan(256);
+      expect(y).toBeGreaterThan(0);
+      expect(y).toBeLessThan(256);
+    }
+    const cx = xs.reduce((a, p) => a + p[0], 0) / xs.length;
+    expect(Math.abs(cx - 128)).toBeLessThan(40);
   });
 });

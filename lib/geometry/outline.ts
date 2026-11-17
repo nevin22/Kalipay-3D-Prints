@@ -29,10 +29,16 @@ export function unionRings(rings: Ring[]): Ring[] {
 /**
  * Grow (`delta` > 0) or shrink (`delta` < 0) outlines by `delta` mm, with rounded corners.
  * Give it outer rings only, counter-clockwise. Outlines that touch after growing are merged.
+ * `join` is the corner style when growing: rounded (default) or mitered (sharp).
  */
-export function offsetRings(rings: Ring[], delta: number): Ring[] {
-  const offset = new ClipperLib.ClipperOffset(2, ARC_TOLERANCE);
-  offset.AddPaths(rings.map(toPath), ClipperLib.JoinType.jtRound, ClipperLib.EndType.etClosedPolygon);
+export function offsetRings(rings: Ring[], delta: number, join: "round" | "miter" = "round"): Ring[] {
+  // Miter keeps pointed corners pointed (a head's ear tips); the limit stops thin spikes growing without end.
+  const offset = new ClipperLib.ClipperOffset(join === "miter" ? 3 : 2, ARC_TOLERANCE);
+  offset.AddPaths(
+    rings.map(toPath),
+    join === "miter" ? ClipperLib.JoinType.jtMiter : ClipperLib.JoinType.jtRound,
+    ClipperLib.EndType.etClosedPolygon
+  );
   const out: { X: number; Y: number }[][] = [];
   offset.Execute(out, delta * SCALE);
   return out.map(toRing);

@@ -25,12 +25,22 @@ export type CapSettings = Pick<
   "units" | "text" | "fontSize" | "offsetX" | "offsetY" | "rotation" | "raise"
 > &
   Partial<Pick<KeyConfig, "legendKind" | "shape" | "smooth">> &
-  Pick<GeneratorState, "stemTolerance"> & { capHeight?: number };
+  Pick<GeneratorState, "stemTolerance"> & {
+    capHeight?: number;
+    /** Sideways lean per side (mm) of the top face; 0 gives straight walls. Default: `capTaper`. */
+    taper?: number;
+    /** Radius (mm) of the rounded rim around the top face. Default: `CAP_EDGE_RADIUS`. */
+    edgeRadius?: number;
+    /** A band on the top face that is its own solid (for a second color), with the legend inside. */
+    border?: boolean;
+  };
 
 export type KeycapParts = {
   cap: THREE.BufferGeometry;
   /** Solid that fills the legend pocket; null when there is no legend. */
   legend: THREE.BufferGeometry | null;
+  /** Solid that fills the border pocket; null without a border. */
+  border: THREE.BufferGeometry | null;
   /** False when the legend does not fit inside the top face. */
   fits: boolean;
 };
@@ -39,6 +49,12 @@ export type KeycapParts = {
 export const EDGE_MARGIN = 0.4;
 /** How deep (mm) the legend sits inside the cap. Fixed, not user-adjustable. */
 export const LEGEND_DEPTH = 0.4;
+/** The border band on the top face lies this far (mm) inside the flat top's edge, outside and inside. */
+const BORDER_OUTER_INSET = 0.8;   // away from the very edge: printers mess up a band right at the rim
+const BORDER_INNER_INSET = 1.6;   // a 0.8 mm band: two nozzle lines wide
+/** Corner radius of the band's outer edge (mm): well rounded so it looks smooth. The inner edge runs parallel. */
+const BORDER_RADIUS = 3;
+const BORDER_INNER_RADIUS = BORDER_RADIUS - (BORDER_INNER_INSET - BORDER_OUTER_INSET);
 /** Thickness (mm) of the side walls, measured horizontally. */
 export const WALL = 1.5;
 /** Thickness (mm) of the cap between the top face and the hollow inside. */
@@ -51,7 +67,7 @@ const RIM_SEGMENTS = 6;
  * Height (mm) of the stem's tip above the cap's bottom: 1 mm over the skirt, so the cap keeps its
  * full travel. It stays here whatever the cap's height, so a taller cap just gets a longer stem.
  */
-const STEM_TIP_Y = DEFAULT_CAP_HEIGHT - TOP_THICKNESS - STEM_LENGTH;
+export const STEM_TIP_Y = DEFAULT_CAP_HEIGHT - TOP_THICKNESS - STEM_LENGTH;
 const CURVE_SEGMENTS = 8;
 const SHAPE_SCALE = 0.65;
 /** Segments per rounded corner. */
@@ -207,9 +223,9 @@ function smoothRim(shapes: LegendShape[], radius: number, top: number) {
  */
 export function buildKeycapParts(settings: CapSettings, font: Font | null): KeycapParts {
   const height = settings.capHeight ?? DEFAULT_CAP_HEIGHT;
-  const { bottomW, bottomD, topW, topD } = capDimensions(settings.units, height);
+  const { bottomW, bottomD, topW, topD } = capDimensions(settings.units, height, settings.taper);
   const radius = CAP_CORNER_RADIUS;
-  const edge = CAP_EDGE_RADIUS;
+  const edge = settings.edgeRadius ?? CAP_EDGE_RADIUS;
   // Outline of the outside at height y, shrunk by `inset` on every side. The
   // walls are straight, so the size at any height is a straight blend.
   const outline = (y: number, inset: number) => {
@@ -237,16 +253,31 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
   const top = outside[outside.length - 1]; // the flat top face
   const shapes = legendRings(font, settings);
 
-  // The legend must stay inside the flat part of the top, rounded corners included.
+  // The border band (optional): it sits in a pocket in the flat top, the legend inside it.
+  const flatW = topW - 2 * edge;
+  const flatD = topD - 2 * edge;
   const flatRadius = Math.max(radius - edge, MIN_CORNER_RADIUS);
+  const flat2d = (inset: number, seed: number, r: number) =>
+    jitterRing(
+      roundedRectangle(flatW - 2 * inset, flatD - 2 * inset, 0, r).map(
+        (v) => new THREE.Vector2(v.x, -v.z)
+      ),
+      seed
+    );
+  const bOuter = settings.border ? flat2d(BORDER_OUTER_INSET, 4001, BORDER_RADIUS) : null;
+  const bInner = settings.border ? flat2d(BORDER_INNER_INSET, 4002, BORDER_INNER_RADIUS) : null;
+  const faceInset = settings.border ? BORDER_INNER_INSET : 0;
+
+  // The legend must stay inside the flat part of the top (inside the border), rounded corners included.
+  const faceRadius = settings.border ? BORDER_INNER_RADIUS : flatRadius;
   const fits = shapes.every((s) =>
     [s.outer, ...s.holes].every((ring) =>
       ring.every((p) =>
         insideRounded(
           p,
-          topW / 2 - edge - EDGE_MARGIN,
-          topD / 2 - edge - EDGE_MARGIN,
-          Math.max(flatRadius - EDGE_MARGIN, 0)
+          (flatW - 2 * faceInset) / 2 - EDGE_MARGIN,
+          (flatD - 2 * faceInset) / 2 - EDGE_MARGIN,
+          Math.max(faceRadius - EDGE_MARGIN, 0)
         )
       )
     )
@@ -291,10 +322,26 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
   addFace(cap, stem.cross, [], socketY, false);
 
   const rect = top.map((v) => new THREE.Vector2(v.x, -v.z));
+  let border: THREE.BufferGeometry | null = null;
+  if (bOuter && bInner) {
+    // Border pocket: a band lowered by LEGEND_DEPTH, with the face inside it left standing.
+    const hole = [...bInner].reverse();
+    addFace(cap, rect, [[...bOuter].reverse()], height, true);
+    addFace(cap, bOuter, [hole], floor, true);
+    addWall(cap, bOuter, floor, height, true);
+    addWall(cap, bInner, floor, height, false);
+    const band = new MeshBuilder();
+    addFace(band, bOuter, [hole], floor, false);
+    addFace(band, bOuter, [hole], height, true);
+    addWall(band, bOuter, floor, height, false);
+    addWall(band, hole, floor, height, false);
+    border = band.toGeometry();
+  }
+  const face = bInner ?? rect;
   if (pocket) {
     // Top face with a hole for every legend outline.
     const outers = shapes.map((s) => [...s.outer].reverse());
-    addFace(cap, rect, outers, height, true);
+    addFace(cap, face, outers, height, true);
     for (const s of shapes) {
       // Cap material left standing inside letter counters (e.g. the "A").
       for (const h of s.holes) addFace(cap, [...h].reverse(), [], height, true);
@@ -302,7 +349,7 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
       for (const ring of [s.outer, ...s.holes]) addWall(cap, ring, floor, height, true);
     }
   } else {
-    addFace(cap, rect, [], height, true);
+    addFace(cap, face, [], height, true);
   }
 
   let legend: THREE.BufferGeometry | null = null;
@@ -330,5 +377,5 @@ export function buildKeycapParts(settings: CapSettings, font: Font | null): Keyc
     legend = mesh.toGeometry();
   }
 
-  return { cap: cap.toGeometry(), legend, fits };
+  return { cap: cap.toGeometry(), legend, border, fits };
 }
