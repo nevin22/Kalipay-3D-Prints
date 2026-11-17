@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 type Feature = {
   name: string;
@@ -58,7 +59,7 @@ function Row({ f }: { f: Feature }) {
   );
 }
 
-function List({ items, onGroup, groupRef }: { items: Feature[]; onGroup?: () => void; groupRef?: React.Ref<HTMLButtonElement> }) {
+function List({ items, onGroup, groupRef }: { items: Feature[]; onGroup?: (e: React.MouseEvent) => void; groupRef?: React.Ref<HTMLButtonElement> }) {
   return (
     <ul className="divide-y divide-white/70">
       {items.map((f) => (
@@ -81,21 +82,20 @@ export default function FeatureList() {
   const [open, setOpen] = useState(false);
   const groupRef = useRef<HTMLButtonElement>(null);
   const backRef = useRef<HTMLButtonElement>(null);
-  const moved = useRef(false);
 
-  // The panel that was clicked becomes inert, so hand keyboard focus to the other one (not on first load).
-  useEffect(() => {
-    if (moved.current) (open ? backRef : groupRef).current?.focus();
-    moved.current = true;
-  }, [open]);
+  // The clicked panel becomes inert. For keyboard users (detail 0) hand focus to the other one; mouse and touch get no ring.
+  const toggle = (next: boolean) => (e: React.MouseEvent) => {
+    flushSync(() => setOpen(next));
+    if (e.detail === 0) (next ? backRef : groupRef).current?.focus();
+  };
 
   return (
     <nav aria-label="Features" className="grid w-full max-w-xl overflow-hidden rounded-3xl glass !bg-white/20 backdrop-blur-[6px] backdrop-saturate-150">
       <div inert={open} className={`${PANEL} ${open ? "invisible -translate-x-12 opacity-0" : ""}`}>
-        <List items={FEATURES} onGroup={() => setOpen(true)} groupRef={groupRef} />
+        <List items={FEATURES} onGroup={toggle(true)} groupRef={groupRef} />
       </div>
       <div inert={!open} className={`${PANEL} ${open ? "" : "invisible translate-x-12 opacity-0"}`}>
-        <button ref={backRef} type="button" onClick={() => setOpen(false)} aria-label={`Back to all designers`} className={`group relative w-full border-b border-white/70 px-14 py-3 text-center ${FOCUS}`}>
+        <button ref={backRef} type="button" onClick={toggle(false)} aria-label={`Back to all designers`} className={`group relative w-full border-b border-white/70 px-14 py-3 text-center ${FOCUS}`}>
           {/* Pinned to the left edge so the text stays centered on the card. */}
           <span className="absolute left-4 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full bg-gradient-to-b from-[#ffa066] to-[#e8590c] text-white shadow-[0_2px_4px_rgb(0_0_0/0.2),inset_0_1px_0_rgb(255_255_255/0.45)] transition group-hover:scale-110">
             <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-none stroke-current transition group-hover:-translate-x-0.5" strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
